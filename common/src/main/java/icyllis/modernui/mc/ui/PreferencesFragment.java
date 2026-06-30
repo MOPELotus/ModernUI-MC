@@ -864,7 +864,7 @@ public class PreferencesFragment extends Fragment {
         layout.setLayoutParams(params);
 
         String tooltip = name + ".tooltip";
-        if (I18n.exists(tooltip)) {
+        if (!I18n.get(tooltip).equals(tooltip)) {
             layout.setTooltipText(I18n.get(tooltip));
         }
         layout.setMinimumHeight(layout.dp(44));
@@ -1119,7 +1119,7 @@ public class PreferencesFragment extends Fragment {
         layout.setLayoutParams(params);
 
         String tooltip = name + ".tooltip";
-        if (I18n.exists(tooltip)) {
+        if (!I18n.get(tooltip).equals(tooltip)) {
             layout.setTooltipText(I18n.get(tooltip));
         }
         layout.setMinimumHeight(layout.dp(44));
@@ -1646,7 +1646,7 @@ public class PreferencesFragment extends Fragment {
                 title.setTextSize(14);
 
                 String tooltip = name + ".tooltip";
-                if (I18n.exists(tooltip)) {
+                if (!I18n.get(tooltip).equals(tooltip)) {
                     title.setTooltipText(I18n.get(tooltip));
                 }
 
@@ -1791,7 +1791,7 @@ public class PreferencesFragment extends Fragment {
                 title.setMinWidth(option.dp(60));
 
                 String tooltip = name + ".tooltip";
-                if (I18n.exists(tooltip)) {
+                if (!I18n.get(tooltip).equals(tooltip)) {
                     title.setTooltipText(I18n.get(tooltip));
                 }
 

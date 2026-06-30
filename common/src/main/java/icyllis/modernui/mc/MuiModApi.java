@@ -452,8 +452,12 @@ public abstract class MuiModApi {
 
     static {
         for (ChatFormatting f : ChatFormatting.values()) {
-            FORMATTING_TABLE[f.getChar()] = f;
-            FORMATTING_TABLE[Character.toUpperCase(f.getChar())] = f;
+            String formatting = f.toString();
+            if (formatting.length() >= 2 && formatting.charAt(0) == ChatFormatting.PREFIX_CODE) {
+                char code = formatting.charAt(1);
+                FORMATTING_TABLE[code] = f;
+                FORMATTING_TABLE[Character.toUpperCase(code)] = f;
+            }
         }
     }
 

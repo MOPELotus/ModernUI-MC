@@ -1,6 +1,6 @@
 /*
  * Modern UI.
- * Copyright (C) 2019-2022 BloCamLimb. All rights reserved.
+ * Copyright (C) 2026 BloCamLimb. All rights reserved.
  *
  * Modern UI is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,20 +18,14 @@
 
 package icyllis.modernui.mc.text.mixin;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import java.util.SequencedMap;
+@Mixin(GuiTextRenderState.class)
+public interface AccessGuiTextRenderState {
 
-/**
- * Handle deferred rendering and transparency sorting (painter's algorithm).
- */
-@Mixin(MultiBufferSource.BufferSource.class)
-public interface AccessBufferSource {
-
-    @Accessor("fixedBuffers")
-    SequencedMap<RenderType, ByteBufferBuilder> getFixedBuffers();
+    @Accessor("text")
+    FormattedCharSequence modernUI$getText();
 }
