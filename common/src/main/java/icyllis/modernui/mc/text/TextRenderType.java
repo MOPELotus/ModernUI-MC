@@ -59,7 +59,7 @@ public abstract class TextRenderType {
     public static final int MODE_UNIFORM_SCALE = 4; // <- must be power of 2
 
     public static final RenderPipeline.Snippet PIPELINE_SNIPPET = RenderPipeline.builder()
-            .withVertexShader(Identifier.withDefaultNamespace("core/rendertype_text_intensity"))
+            .withVertexShader(Identifier.withDefaultNamespace("core/text"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_text_normal"))
             .withBindGroupLayout(BindGroupLayout.builder()
                     .withUniform("Fog", UniformType.UNIFORM_BUFFER)
@@ -84,7 +84,7 @@ public abstract class TextRenderType {
             .build();
 
     public static final RenderPipeline.Snippet PIPELINE_SDF_SNIPPET = RenderPipeline.builder()
-            .withVertexShader(Identifier.withDefaultNamespace("core/rendertype_text_intensity"))
+            .withVertexShader(Identifier.withDefaultNamespace("core/text"))
             .withBindGroupLayout(BindGroupLayout.builder()
                     .withUniform("Fog", UniformType.UNIFORM_BUFFER)
                     .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
