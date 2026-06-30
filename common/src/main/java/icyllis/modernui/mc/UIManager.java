@@ -126,6 +126,7 @@ public abstract class UIManager implements LifecycleOwner {
     private final Thread mUiThread;
     private volatile Looper mLooper;
     private volatile boolean mRunning;
+    private volatile boolean mShutdownRequested;
 
     // the view root impl
     protected volatile ViewRootImpl mRoot;
@@ -494,6 +495,26 @@ public abstract class UIManager implements LifecycleOwner {
         // must delay, some messages are not enqueued
         // currently it is a bit longer than a game tick
         mRoot.mHandler.postDelayed(mLooper::quitSafely, 60);
+    }
+
+    private void requestShutdown() {
+        if (mShutdownRequested) {
+            ViewRootImpl root = mRoot;
+            if (root != null) {
+                root.cancelPendingFrame();
+            }
+            return;
+        }
+        mShutdownRequested = true;
+        mRunning = false;
+
+        ViewRootImpl root = mRoot;
+        if (root != null) {
+            root.mHandler.post(this::finish);
+            root.cancelPendingFrame();
+        } else if (mLooper != null) {
+            mLooper.quitSafely();
+        }
     }
 
     private void scheduleHoverMoveForScroll() {
@@ -1178,8 +1199,7 @@ public abstract class UIManager implements LifecycleOwner {
                 mLastSubmittedVulkanLayer = null;
             }
             if (!minecraft.isRunning() && mRunning) {
-                mRunning = false;
-                mRoot.mHandler.post(this::finish);
+                requestShutdown();
                 if (mLayerTexture != null) {
                     mLayerTextureView.close();
                     mLayerTextureView = null;
@@ -1232,6 +1252,7 @@ public abstract class UIManager implements LifecycleOwner {
         System.gc();
         Core.requireImmediateContext().unref();
         if (sInstance != null) {
+            sInstance.requestShutdown();
             AudioManager.getInstance().close();
             try {
                 // in case of GLFW is terminated too early
@@ -1353,12 +1374,18 @@ public abstract class UIManager implements LifecycleOwner {
             canvas.restoreToCount(1);
             Recording task = Core.requireUiRecordingContext().snap();
             synchronized (mRenderLock) {
+                if (!mRunning) {
+                    task.close();
+                    return;
+                }
                 if (mLastFrameTask != null) {
                     mLastFrameTask.close();
                 }
                 mLastFrameTask = task;
                 try {
-                    mRenderLock.wait();
+                    while (mRunning && mLastFrameTask == task) {
+                        mRenderLock.wait();
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -1371,6 +1398,16 @@ public abstract class UIManager implements LifecycleOwner {
             if (System.nanoTime() - mLastPurgeNanos >= 20_000_000_000L) {
                 mLastPurgeNanos = System.nanoTime();
                 context.performDeferredCleanup(120_000);
+            }
+        }
+
+        private void cancelPendingFrame() {
+            synchronized (mRenderLock) {
+                if (mLastFrameTask != null) {
+                    mLastFrameTask.close();
+                    mLastFrameTask = null;
+                }
+                mRenderLock.notifyAll();
             }
         }
 
