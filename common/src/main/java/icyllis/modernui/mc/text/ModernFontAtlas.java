@@ -36,7 +36,7 @@ import icyllis.modernui.annotation.Nullable;
 import icyllis.modernui.annotation.RenderThread;
 import icyllis.modernui.core.Core;
 import icyllis.modernui.mc.ModernUIMod;
-import icyllis.modernui.mc.VulkanModIntegration;
+import icyllis.modernui.mc.NativeVulkanIntegration;
 import icyllis.modernui.text.TextUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -343,8 +343,8 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
                     glBindTexture(GL_TEXTURE_2D, boundTexture);
                 }
                 case "Vulkan" -> {
-                    if (ModernUIMod.isVulkanModLoaded()) {
-                        VulkanModIntegration.replaceMainImageViewWithSwizzle(textureView, Swizzle.make("111r"));
+                    if (ModernUIMod.isVulkanBackend()) {
+                        NativeVulkanIntegration.replaceMainImageViewWithSwizzle(textureView, Swizzle.make("111r"));
                     }
                 }
             }

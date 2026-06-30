@@ -1002,19 +1002,19 @@ public abstract class UIManager implements LifecycleOwner {
                         /*scissorArea*/ null
                 ));
             } else if (surface.getImage() instanceof @RawPtr VulkanImage layer) {
-                if (ModernUIMod.isVulkanModLoaded()) {
-                    if (mLayerTexture_Vulkan == null || !VulkanModIntegration.sameImage(mLayerTexture_Vulkan, layer)) {
+                if (ModernUIMod.isVulkanBackend()) {
+                    if (mLayerTexture_Vulkan == null || !NativeVulkanIntegration.sameImage(mLayerTexture_Vulkan, layer)) {
                         if (mLayerTexture_Vulkan != null) {
                             // there's nothing to close, because the resource is managed by us
                             mLayerTexture_Vulkan = null;
                             mLayerTextureView_Vulkan.close();
                         }
-                        mLayerTexture_Vulkan = VulkanModIntegration.wrapTextureImageFromArc3D(layer);
+                        mLayerTexture_Vulkan = NativeVulkanIntegration.wrapTextureImageFromArc3D(layer);
                         mLayerTextureView_Vulkan = RenderSystem.getDevice()
                                 .createTextureView(mLayerTexture_Vulkan);
                     }
                     layer.refCommandBuffer();
-                    VulkanModIntegration.syncImageLayoutFromArc3D(mLayerTexture_Vulkan, layer);
+                    NativeVulkanIntegration.syncImageLayoutFromArc3D(mLayerTexture_Vulkan, layer);
                     gr.nextStratum();
                     MuiModApi.get().submitGuiElementRenderState(gr, new BlitRenderState(
                             // render target is always premultiplied
@@ -1027,7 +1027,7 @@ public abstract class UIManager implements LifecycleOwner {
                             ~0,
                             /*scissorArea*/ null
                     ));
-                    VulkanModIntegration.addFrameOp(layer::unrefCommandBuffer);
+                    NativeVulkanIntegration.addFrameOp(layer::unrefCommandBuffer);
                 }
                 mLastSubmittedVulkanLayer = layer;
             }
@@ -1172,8 +1172,8 @@ public abstract class UIManager implements LifecycleOwner {
                 mLayerTexture.close();
             }
             if (mLayerTexture_Vulkan != null && mLastSubmittedVulkanLayer != null) {
-                if (ModernUIMod.isVulkanModLoaded()) {
-                    VulkanModIntegration.syncImageLayoutFromVulkan(mLayerTexture_Vulkan, mLastSubmittedVulkanLayer);
+                if (ModernUIMod.isVulkanBackend()) {
+                    NativeVulkanIntegration.syncImageLayoutFromVulkan(mLayerTexture_Vulkan, mLastSubmittedVulkanLayer);
                 }
                 mLastSubmittedVulkanLayer = null;
             }

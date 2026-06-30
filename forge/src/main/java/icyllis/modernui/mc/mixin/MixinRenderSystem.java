@@ -24,6 +24,7 @@ import icyllis.arc3d.engine.ContextOptions;
 import icyllis.modernui.core.Core;
 import icyllis.modernui.mc.ModernUIClient;
 import icyllis.modernui.mc.ModernUIMod;
+import icyllis.modernui.mc.NativeVulkanIntegration;
 import net.minecraft.util.TimeSource;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.Configuration;
@@ -64,12 +65,17 @@ public class MixinRenderSystem {
         options.mDriverBugWorkarounds = ModernUIClient.getGpuDriverBugWorkarounds();
         switch (device.getDeviceInfo().backendName()) {
             case "OpenGL" -> {
+                ModernUIMod.setVulkanBackend(false);
                 if (!Core.initOpenGL(options)) {
                     throw new IllegalStateException("Failed to create OpenGL device");
                 }
             }
             case "Vulkan" -> {
-                throw new UnsupportedOperationException("Unknown Vulkan backend");
+                ModernUIMod.setVulkanBackend(true);
+                var context = NativeVulkanIntegration.wrapContext();
+                if (!Core.initVulkan(context, options)) {
+                    throw new IllegalStateException("Failed to create Vulkan device");
+                }
             }
         }
     }

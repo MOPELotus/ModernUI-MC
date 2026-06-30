@@ -42,7 +42,7 @@ public abstract class ModernUIMod {
 
     protected static boolean sOptiFineLoaded;
     protected static boolean sIrisApiLoaded;
-    protected static volatile boolean sVulkanModLoaded;
+    protected static volatile boolean sVulkanBackend;
     protected static volatile boolean sLegendaryTooltipsLoaded;
     protected static volatile boolean sUntranslatedItemsLoaded;
 
@@ -81,8 +81,17 @@ public abstract class ModernUIMod {
         return sIrisApiLoaded;
     }
 
+    @Deprecated(forRemoval = false)
     public static boolean isVulkanModLoaded() {
-        return sVulkanModLoaded;
+        return isVulkanBackend();
+    }
+
+    public static boolean isVulkanBackend() {
+        return sVulkanBackend;
+    }
+
+    public static void setVulkanBackend(boolean vulkanBackend) {
+        sVulkanBackend = vulkanBackend;
     }
 
     public static boolean isLegendaryTooltipsLoaded() {

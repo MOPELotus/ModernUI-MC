@@ -99,7 +99,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
         if (!minecraft.isSameThread()) {
             throw new IllegalStateException("Not called from main thread");
         }
-        minecraft.setScreen(new SimpleScreen(fragment, null, null, CommonComponents.EMPTY));
+        minecraft.gui.setScreen(new SimpleScreen(fragment, null, null, CommonComponents.EMPTY));
     }
 
     @Override
@@ -113,7 +113,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                 onHoverMove(false);
             }
             // for non-mui screens
-            if (mScreen == null && minecraft.screen == null) {
+            if (mScreen == null && minecraft.gui.screen() == null) {
                 //mTicks = 0;
                 mElapsedTimeMillis = 0;
             }
@@ -134,9 +134,10 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
     @Override
     protected void onPreKeyInput(int action, KeyEvent event) {
         if (action == GLFW_PRESS) {
-            if (minecraft.screen == null ||
-                    minecraft.screen.shouldCloseOnEsc() ||
-                    minecraft.screen instanceof TitleScreen) {
+            Screen screen = minecraft.gui.screen();
+            if (screen == null ||
+                    screen.shouldCloseOnEsc() ||
+                    screen instanceof TitleScreen) {
                 InputConstants.Key key = InputConstants.getKey(event);
                 if (OPEN_CENTER_KEY.isActiveAndMatches(key)) {
                     open(new CenterFragment2());
@@ -175,7 +176,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                     long width = tex.getWidth(0);
                     long height = tex.getHeight(0);
                     int mipLevels = tex.getMipLevels();
-                    int bpp = tex.getFormat().pixelSize();
+                    int bpp = tex.getFormat().blockSize();
                     long size = width * height * bpp;
                     if (mipLevels > 1) {
                         size = ((size - (size >> (mipLevels << 1))) << 2) / 3;
@@ -294,7 +295,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
     @SubscribeEvent
     void onChangeFov(@Nonnull ViewportEvent.ComputeFov event) {
         boolean zoomActive = false;
-        if (sZoomEnabled && minecraft.screen == null) {
+        if (sZoomEnabled && minecraft.gui.screen() == null) {
             zoomActive = ZOOM_KEY.isDown();
         }
         if (zoomActive) {
@@ -302,7 +303,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                 mZoomMode = true;
                 mZoomSmoothCamera = minecraft.options.smoothCamera;
                 minecraft.options.smoothCamera = true;
-                minecraft.levelRenderer.needsUpdate();
+                invalidateLevelGeometry();
             }
             event.setFOV(
                     event.getFOV() * 0.25f
@@ -310,7 +311,18 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
         } else if (mZoomMode) {
             mZoomMode = false;
             minecraft.options.smoothCamera = mZoomSmoothCamera;
-            minecraft.levelRenderer.needsUpdate();
+            invalidateLevelGeometry();
+        }
+    }
+
+    private void invalidateLevelGeometry() {
+        if (minecraft.level != null) {
+            minecraft.levelRenderer.invalidateCompiledGeometry(
+                    minecraft.level,
+                    minecraft.options,
+                    minecraft.gameRenderer.mainCamera(),
+                    minecraft.getBlockColors()
+            );
         }
     }
 
