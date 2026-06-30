@@ -19,18 +19,17 @@
 package icyllis.modernui.mc.fabric;
 
 import icyllis.modernui.mc.ConfigItem;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.Range;
 
 import java.util.List;
 
 public class ForgeConfigItem<T> extends ConfigItem<T> {
 
-    private final ModConfigSpec.ConfigValue<T> value;
-    private final ModConfigSpec.ValueSpec spec;
+    private final SimpleConfigSpec.ConfigValue<T> value;
+    private final SimpleConfigSpec.ValueSpec spec;
 
-    public ForgeConfigItem(ModConfigSpec.ConfigValue<T> value,
-                           ModConfigSpec.ValueSpec spec) {
+    public ForgeConfigItem(SimpleConfigSpec.ConfigValue<T> value,
+                           SimpleConfigSpec.ValueSpec spec) {
         this.value = value;
         this.spec = spec;
     }
@@ -55,12 +54,13 @@ public class ForgeConfigItem<T> extends ConfigItem<T> {
         return value.getDefault();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Range<T> getRange() {
-        ModConfigSpec.Range<Comparable<Object>> r = spec.getRange();
-        if (r != null) {
-            return (Range<T>) Range.of(r.getMin(), r.getMax());
+        Object min = spec.getMin();
+        Object max = spec.getMax();
+        if (min instanceof Comparable<?> && max instanceof Comparable<?>) {
+            return (Range<T>) Range.of((Comparable) min, (Comparable) max);
         }
         return null;
     }

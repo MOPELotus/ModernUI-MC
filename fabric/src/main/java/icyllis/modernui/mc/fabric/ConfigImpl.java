@@ -29,19 +29,16 @@ import icyllis.modernui.view.ViewConfiguration;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.neoforged.fml.config.IConfigSpec;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.Platform;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import static icyllis.modernui.mc.ModernUIMod.*;
 
@@ -49,71 +46,60 @@ import static icyllis.modernui.mc.ModernUIMod.*;
 public final class ConfigImpl {
 
     public static final Client CLIENT;
-    public static final ModConfigSpec CLIENT_SPEC;
+    public static final SimpleConfigSpec CLIENT_SPEC;
 
     public static final Common COMMON;
-    public static final ModConfigSpec COMMON_SPEC;
+    public static final SimpleConfigSpec COMMON_SPEC;
 
     public static final Text TEXT;
-    public static final ModConfigSpec TEXT_SPEC;
+    public static final SimpleConfigSpec TEXT_SPEC;
 
     /*static final Server SERVER;
-    private static final ModConfigSpec SERVER_SPEC;*/
-
-    private static void init(boolean isClient,
-                             BiConsumer<ModConfig.Type, ModConfigSpec> registerConfig) {
-        /*builder = new ModConfigSpec.Builder();
-        SERVER = new Server(builder);
-        SERVER_SPEC = builder.build();*/
-
-        /*container.addConfig(new ModConfig(ModConfig.Type.SERVER, SERVER_SPEC, container,
-                    ModernUI.NAME_CPT + "/server.toml")); // sync to client (network)*/
-    }
+    private static final SimpleConfigSpec SERVER_SPEC;*/
 
     static {
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             {
-                ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+                SimpleConfigSpec.Builder builder = new SimpleConfigSpec.Builder();
                 CLIENT = new Client(builder);
-                CLIENT_SPEC = builder.build();
+                CLIENT_SPEC = builder.build(configPath("client.toml"));
             }
-            ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+            SimpleConfigSpec.Builder builder = new SimpleConfigSpec.Builder();
             TEXT = new Text(builder);
-            TEXT_SPEC = builder.build();
+            TEXT_SPEC = builder.build(configPath("text.toml"));
         } else {
             CLIENT = null;
             CLIENT_SPEC = null;
             TEXT = null;
             TEXT_SPEC = null;
         }
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        SimpleConfigSpec.Builder builder = new SimpleConfigSpec.Builder();
         COMMON = new Common(builder);
-        COMMON_SPEC = builder.build();
+        COMMON_SPEC = builder.build(configPath("common.toml"));
     }
 
-    /*public static void reload(@Nonnull ModConfig config) {
-        final IConfigSpec<?> spec = config.getSpec();
-        *//* else if (spec == SERVER_SPEC) {
-            SERVER.reload();
-            LOGGER.debug(MARKER, "Server config reloaded with {}", event.getClass().getSimpleName());
-        }*//*
-    }*/
-
-    public static void reloadCommon(@Nonnull ModConfig config) {
-        final IConfigSpec spec = config.getSpec();
-        if (spec == COMMON_SPEC) {
-            COMMON.reload();
-            LOGGER.info(MARKER, "Modern UI common config loaded/reloaded");
-        }
+    private static Path configPath(@Nonnull String fileName) {
+        return MuiPlatformFabric.BOOTSTRAP_PATH.getParent().resolve(fileName);
     }
 
-    public static void reloadAnyClient(@Nonnull ModConfig config) {
-        final IConfigSpec spec = config.getSpec();
-        if (spec == CLIENT_SPEC) {
+    public static void loadCommon() {
+        COMMON_SPEC.load();
+        COMMON.reload();
+        COMMON_SPEC.save();
+        LOGGER.info(MARKER, "Modern UI common config loaded/reloaded");
+    }
+
+    public static void loadClientConfigs() {
+        if (CLIENT_SPEC != null) {
+            CLIENT_SPEC.load();
             CLIENT.reload();
+            CLIENT_SPEC.save();
             LOGGER.info(MARKER, "Modern UI client config loaded/reloaded");
-        } else if (spec == TEXT_SPEC) {
+        }
+        if (TEXT_SPEC != null) {
+            TEXT_SPEC.load();
             TEXT.reload();
+            TEXT_SPEC.save();
             LOGGER.info(MARKER, "Modern UI text config loaded/reloaded");
         }
     }
@@ -121,7 +107,7 @@ public final class ConfigImpl {
     @Nullable
     static Map<String, ConfigItem<?>> getConfigMap(int type) {
         final Object config;
-        final ModConfigSpec configSpec;
+        final SimpleConfigSpec configSpec;
         switch (type) {
             case Config.TYPE_CLIENT -> {
                 config = CLIENT;
@@ -139,11 +125,14 @@ public final class ConfigImpl {
                 return null;
             }
         }
+        if (config == null || configSpec == null) {
+            return null;
+        }
         Map<String, ConfigItem<?>> map = new HashMap<>();
         for (var f : config.getClass().getDeclaredFields()) {
             try {
-                if (f.get(config) instanceof ModConfigSpec.ConfigValue<?> value &&
-                        configSpec.getSpec().get(value.getPath()) instanceof ModConfigSpec.ValueSpec spec) {
+                if (f.get(config) instanceof SimpleConfigSpec.ConfigValue<?> value &&
+                        configSpec.getSpec().get(value.getPath()) instanceof SimpleConfigSpec.ValueSpec spec) {
                     map.put(f.getName(), new ForgeConfigItem<>(value, spec));
                 }
             } catch (IllegalAccessException e) {
@@ -154,7 +143,7 @@ public final class ConfigImpl {
     }
 
     static void saveConfig(int type) {
-        ModConfigSpec spec = switch (type) {
+        SimpleConfigSpec spec = switch (type) {
             case Config.TYPE_CLIENT -> CLIENT_SPEC;
             case Config.TYPE_COMMON -> COMMON_SPEC;
             case Config.TYPE_TEXT -> TEXT_SPEC;
@@ -164,46 +153,6 @@ public final class ConfigImpl {
             spec.save();
         }
     }
-
-    /*private static class C extends ModConfig {
-
-        private static final Toml _TOML = new Toml();
-
-        public C(Type type, ModConfigSpec spec, ModContainer container, String name) {
-            super(type, spec, container, ModernUI.NAME_CPT + "/" + name + ".toml");
-        }
-
-        @Override
-        public ConfigFileTypeHandler getHandler() {
-            return _TOML;
-        }
-    }
-
-    private static class Toml extends ConfigFileTypeHandler {
-
-        private Toml() {
-        }
-
-        // reroute it to the global config directory
-        // see ServerLifecycleHooks, ModConfig.Type.SERVER
-        private static Path reroute(@Nonnull Path configBasePath) {
-            //noinspection SpellCheckingInspection
-            if (configBasePath.endsWith("serverconfig")) {
-                return FMLPaths.CONFIGDIR.get();
-            }
-            return configBasePath;
-        }
-
-        @Override
-        public Function<ModConfig, CommentedFileConfig> reader(Path configBasePath) {
-            return super.reader(reroute(configBasePath));
-        }
-
-        @Override
-        public void unload(Path configBasePath, ModConfig config) {
-            super.unload(reroute(configBasePath), config);
-        }
-    }*/
 
     public static class Client {
 
@@ -224,76 +173,76 @@ public final class ConfigImpl {
         public static final int TOOLTIP_ARROW_SCROLL_FACTOR_MIN = 0;
         public static final int TOOLTIP_ARROW_SCROLL_FACTOR_MAX = 320;
 
-        public final ModConfigSpec.BooleanValue mBlurEffect;
-        //public final ModConfigSpec.BooleanValue mBlurWithBackground;
-        public final ModConfigSpec.BooleanValue mAdditionalBlurEffect;
-        public final ModConfigSpec.BooleanValue mOverrideVanillaBlur;
-        public final ModConfigSpec.IntValue mBackgroundDuration;
-        public final ModConfigSpec.IntValue mBlurRadius;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mBackgroundColor;
-        public final ModConfigSpec.BooleanValue mInventoryPause;
-        public final ModConfigSpec.BooleanValue mTooltip;
-        public final ModConfigSpec.BooleanValue mRoundedTooltip;
-        public final ModConfigSpec.BooleanValue mCenterTooltipTitle;
-        public final ModConfigSpec.BooleanValue mTooltipTitleBreak;
-        public final ModConfigSpec.BooleanValue mExactTooltipPositioning;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mTooltipFill;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mTooltipStroke;
-        public final ModConfigSpec.IntValue mTooltipCycle;
-        public final ModConfigSpec.DoubleValue mTooltipWidth;
-        public final ModConfigSpec.DoubleValue mTooltipRadius;
-        public final ModConfigSpec.DoubleValue mTooltipShadowRadius;
-        public final ModConfigSpec.DoubleValue mTooltipShadowAlpha;
-        public final ModConfigSpec.BooleanValue mAdaptiveTooltipColors;
-        public final ModConfigSpec.IntValue mTooltipArrowScrollFactor;
-        public final ModConfigSpec.BooleanValue mTooltipLineWrapping;
-        //public final ModConfigSpec.IntValue mTooltipDuration;
-        public final ModConfigSpec.BooleanValue mDing;
-        public final ModConfigSpec.ConfigValue<String> mDingSound;
-        public final ModConfigSpec.DoubleValue mDingVolume;
-        //public final ModConfigSpec.BooleanValue mZoom;
-        //private final ModConfigSpec.BooleanValue hudBars;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mTheme;
-        public final ModConfigSpec.BooleanValue mForceRtl;
-        public final ModConfigSpec.DoubleValue mFontScale;
-        public final ModConfigSpec.EnumValue<Config.Client.WindowMode> mWindowMode;
-        public final ModConfigSpec.BooleanValue mUseNewGuiScale;
-        //public final ModConfigSpec.BooleanValue mRemoveSignature;
-        public final ModConfigSpec.BooleanValue mRemoveTelemetry;
-        //public final ModConfigSpec.BooleanValue mSecurePublicKey;
-        public final ModConfigSpec.IntValue mFramerateInactive;
-        //public final ModConfigSpec.IntValue mFramerateMinimized;
-        public final ModConfigSpec.DoubleValue mMasterVolumeInactive;
-        public final ModConfigSpec.DoubleValue mMasterVolumeMinimized;
-        public final ModConfigSpec.BooleanValue mGlobalVolumeControl;
+        public final SimpleConfigSpec.BooleanValue mBlurEffect;
+        //public final SimpleConfigSpec.BooleanValue mBlurWithBackground;
+        public final SimpleConfigSpec.BooleanValue mAdditionalBlurEffect;
+        public final SimpleConfigSpec.BooleanValue mOverrideVanillaBlur;
+        public final SimpleConfigSpec.IntValue mBackgroundDuration;
+        public final SimpleConfigSpec.IntValue mBlurRadius;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mBackgroundColor;
+        public final SimpleConfigSpec.BooleanValue mInventoryPause;
+        public final SimpleConfigSpec.BooleanValue mTooltip;
+        public final SimpleConfigSpec.BooleanValue mRoundedTooltip;
+        public final SimpleConfigSpec.BooleanValue mCenterTooltipTitle;
+        public final SimpleConfigSpec.BooleanValue mTooltipTitleBreak;
+        public final SimpleConfigSpec.BooleanValue mExactTooltipPositioning;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mTooltipFill;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mTooltipStroke;
+        public final SimpleConfigSpec.IntValue mTooltipCycle;
+        public final SimpleConfigSpec.DoubleValue mTooltipWidth;
+        public final SimpleConfigSpec.DoubleValue mTooltipRadius;
+        public final SimpleConfigSpec.DoubleValue mTooltipShadowRadius;
+        public final SimpleConfigSpec.DoubleValue mTooltipShadowAlpha;
+        public final SimpleConfigSpec.BooleanValue mAdaptiveTooltipColors;
+        public final SimpleConfigSpec.IntValue mTooltipArrowScrollFactor;
+        public final SimpleConfigSpec.BooleanValue mTooltipLineWrapping;
+        //public final SimpleConfigSpec.IntValue mTooltipDuration;
+        public final SimpleConfigSpec.BooleanValue mDing;
+        public final SimpleConfigSpec.ConfigValue<String> mDingSound;
+        public final SimpleConfigSpec.DoubleValue mDingVolume;
+        //public final SimpleConfigSpec.BooleanValue mZoom;
+        //private final SimpleConfigSpec.BooleanValue hudBars;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mTheme;
+        public final SimpleConfigSpec.BooleanValue mForceRtl;
+        public final SimpleConfigSpec.DoubleValue mFontScale;
+        public final SimpleConfigSpec.EnumValue<Config.Client.WindowMode> mWindowMode;
+        public final SimpleConfigSpec.BooleanValue mUseNewGuiScale;
+        //public final SimpleConfigSpec.BooleanValue mRemoveSignature;
+        public final SimpleConfigSpec.BooleanValue mRemoveTelemetry;
+        //public final SimpleConfigSpec.BooleanValue mSecurePublicKey;
+        public final SimpleConfigSpec.IntValue mFramerateInactive;
+        //public final SimpleConfigSpec.IntValue mFramerateMinimized;
+        public final SimpleConfigSpec.DoubleValue mMasterVolumeInactive;
+        public final SimpleConfigSpec.DoubleValue mMasterVolumeMinimized;
+        public final SimpleConfigSpec.BooleanValue mGlobalVolumeControl;
 
-        public final ModConfigSpec.IntValue mScrollbarSize;
-        public final ModConfigSpec.IntValue mTouchSlop;
-        public final ModConfigSpec.IntValue mHoverSlop;
-        public final ModConfigSpec.IntValue mMinScrollbarTouchTarget;
-        public final ModConfigSpec.IntValue mMinimumFlingVelocity;
-        public final ModConfigSpec.IntValue mMaximumFlingVelocity;
-        public final ModConfigSpec.DoubleValue mScrollFriction;
-        public final ModConfigSpec.IntValue mOverscrollDistance;
-        public final ModConfigSpec.IntValue mOverflingDistance;
-        public final ModConfigSpec.DoubleValue mVerticalScrollFactor;
-        public final ModConfigSpec.DoubleValue mHorizontalScrollFactor;
-        public final ModConfigSpec.IntValue mHoverTooltipShowTimeout;
-        public final ModConfigSpec.IntValue mHoverTooltipHideTimeout;
+        public final SimpleConfigSpec.IntValue mScrollbarSize;
+        public final SimpleConfigSpec.IntValue mTouchSlop;
+        public final SimpleConfigSpec.IntValue mHoverSlop;
+        public final SimpleConfigSpec.IntValue mMinScrollbarTouchTarget;
+        public final SimpleConfigSpec.IntValue mMinimumFlingVelocity;
+        public final SimpleConfigSpec.IntValue mMaximumFlingVelocity;
+        public final SimpleConfigSpec.DoubleValue mScrollFriction;
+        public final SimpleConfigSpec.IntValue mOverscrollDistance;
+        public final SimpleConfigSpec.IntValue mOverflingDistance;
+        public final SimpleConfigSpec.DoubleValue mVerticalScrollFactor;
+        public final SimpleConfigSpec.DoubleValue mHorizontalScrollFactor;
+        public final SimpleConfigSpec.IntValue mHoverTooltipShowTimeout;
+        public final SimpleConfigSpec.IntValue mHoverTooltipHideTimeout;
 
-        private final ModConfigSpec.ConfigValue<List<? extends String>> mBlurBlacklist;
+        private final SimpleConfigSpec.ConfigValue<List<? extends String>> mBlurBlacklist;
 
-        public final ModConfigSpec.ConfigValue<String> mFirstFontFamily;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mFallbackFontFamilyList;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mFontRegistrationList;
-        public final ModConfigSpec.BooleanValue mUseColorEmoji;
-        public final ModConfigSpec.BooleanValue mLinearMetrics;
-        public final ModConfigSpec.BooleanValue mEmojiShortcodes;
+        public final SimpleConfigSpec.ConfigValue<String> mFirstFontFamily;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mFallbackFontFamilyList;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mFontRegistrationList;
+        public final SimpleConfigSpec.BooleanValue mUseColorEmoji;
+        public final SimpleConfigSpec.BooleanValue mLinearMetrics;
+        public final SimpleConfigSpec.BooleanValue mEmojiShortcodes;
 
-        /*public final ModConfigSpec.BooleanValue mSkipGLCapsError;
-        public final ModConfigSpec.BooleanValue mShowGLCapsError;*/
+        /*public final SimpleConfigSpec.BooleanValue mSkipGLCapsError;
+        public final SimpleConfigSpec.BooleanValue mShowGLCapsError;*/
 
-        private Client(@Nonnull ModConfigSpec.Builder builder) {
+        private Client(@Nonnull SimpleConfigSpec.Builder builder) {
             builder.comment("Screen Config")
                     .push("screen");
 
@@ -610,14 +559,14 @@ public final class ConfigImpl {
      */
     public static class Common {
 
-        public final ModConfigSpec.BooleanValue developerMode;
-        public final ModConfigSpec.IntValue oneTimeEvents;
+        public final SimpleConfigSpec.BooleanValue developerMode;
+        public final SimpleConfigSpec.IntValue oneTimeEvents;
 
-        //public final ModConfigSpec.BooleanValue autoShutdown;
+        //public final SimpleConfigSpec.BooleanValue autoShutdown;
 
-        //public final ModConfigSpec.ConfigValue<List<? extends String>> shutdownTimes;
+        //public final SimpleConfigSpec.ConfigValue<List<? extends String>> shutdownTimes;
 
-        private Common(@Nonnull ModConfigSpec.Builder builder) {
+        private Common(@Nonnull SimpleConfigSpec.Builder builder) {
             builder.comment("Developer Config")
                     .push("developer");
 
@@ -667,48 +616,48 @@ public final class ConfigImpl {
         /*public static final int REHASH_MIN = 0;
         public static final int REHASH_MAX = 2000;*/
 
-        //final ModConfigSpec.BooleanValue globalRenderer;
-        public final ModConfigSpec.BooleanValue mAllowShadow;
-        public final ModConfigSpec.BooleanValue mFixedResolution;
-        public final ModConfigSpec.DoubleValue mBaseFontSize;
-        public final ModConfigSpec.DoubleValue mBaselineShift;
-        public final ModConfigSpec.DoubleValue mShadowOffset;
-        public final ModConfigSpec.DoubleValue mOutlineOffset;
-        public final ModConfigSpec.DoubleValue mBitmapOffset;
-        //public final ModConfigSpec.BooleanValue mSuperSampling;
-        //public final ModConfigSpec.BooleanValue mAlignPixels;
-        public final ModConfigSpec.IntValue mCacheLifespan;
-        //public final ModConfigSpec.IntValue mRehashThreshold;
-        public final ModConfigSpec.EnumValue<Config.Text.TextDirection> mTextDirection;
-        //public final ModConfigSpec.BooleanValue mBitmapReplacement;
-        //public final ModConfigSpec.BooleanValue mUseDistanceField;
-        //public final ModConfigSpec.BooleanValue mUseVanillaFont;
-        public final ModConfigSpec.BooleanValue mUseTextShadersInWorld;
-        public final ModConfigSpec.EnumValue<Config.Text.DefaultFontBehavior> mDefaultFontBehavior;
-        public final ModConfigSpec.ConfigValue<List<? extends String>> mDefaultFontRuleSet;
-        public final ModConfigSpec.BooleanValue mUseComponentCache;
-        public final ModConfigSpec.BooleanValue mAllowAsyncLayout;
-        public final ModConfigSpec.EnumValue<Config.Text.LineBreakStyle> mLineBreakStyle;
-        public final ModConfigSpec.EnumValue<Config.Text.LineBreakWordStyle> mLineBreakWordStyle;
-        //public final ModConfigSpec.BooleanValue mSmartSDFShaders;
-        public final ModConfigSpec.BooleanValue mComputeDeviceFontSize;
-        public final ModConfigSpec.BooleanValue mAllowSDFTextIn2D;
-        public final ModConfigSpec.BooleanValue mTweakExperienceText;
+        //final SimpleConfigSpec.BooleanValue globalRenderer;
+        public final SimpleConfigSpec.BooleanValue mAllowShadow;
+        public final SimpleConfigSpec.BooleanValue mFixedResolution;
+        public final SimpleConfigSpec.DoubleValue mBaseFontSize;
+        public final SimpleConfigSpec.DoubleValue mBaselineShift;
+        public final SimpleConfigSpec.DoubleValue mShadowOffset;
+        public final SimpleConfigSpec.DoubleValue mOutlineOffset;
+        public final SimpleConfigSpec.DoubleValue mBitmapOffset;
+        //public final SimpleConfigSpec.BooleanValue mSuperSampling;
+        //public final SimpleConfigSpec.BooleanValue mAlignPixels;
+        public final SimpleConfigSpec.IntValue mCacheLifespan;
+        //public final SimpleConfigSpec.IntValue mRehashThreshold;
+        public final SimpleConfigSpec.EnumValue<Config.Text.TextDirection> mTextDirection;
+        //public final SimpleConfigSpec.BooleanValue mBitmapReplacement;
+        //public final SimpleConfigSpec.BooleanValue mUseDistanceField;
+        //public final SimpleConfigSpec.BooleanValue mUseVanillaFont;
+        public final SimpleConfigSpec.BooleanValue mUseTextShadersInWorld;
+        public final SimpleConfigSpec.EnumValue<Config.Text.DefaultFontBehavior> mDefaultFontBehavior;
+        public final SimpleConfigSpec.ConfigValue<List<? extends String>> mDefaultFontRuleSet;
+        public final SimpleConfigSpec.BooleanValue mUseComponentCache;
+        public final SimpleConfigSpec.BooleanValue mAllowAsyncLayout;
+        public final SimpleConfigSpec.EnumValue<Config.Text.LineBreakStyle> mLineBreakStyle;
+        public final SimpleConfigSpec.EnumValue<Config.Text.LineBreakWordStyle> mLineBreakWordStyle;
+        //public final SimpleConfigSpec.BooleanValue mSmartSDFShaders;
+        public final SimpleConfigSpec.BooleanValue mComputeDeviceFontSize;
+        public final SimpleConfigSpec.BooleanValue mAllowSDFTextIn2D;
+        public final SimpleConfigSpec.BooleanValue mTweakExperienceText;
 
-        public final ModConfigSpec.BooleanValue mAntiAliasing;
-        public final ModConfigSpec.BooleanValue mLinearMetrics;
-        public final ModConfigSpec.IntValue mMinPixelDensityForSDF;
-        public final ModConfigSpec.BooleanValue mLinearSamplingA8Atlas;
-        //public final ModConfigSpec.BooleanValue mLinearSampling;
+        public final SimpleConfigSpec.BooleanValue mAntiAliasing;
+        public final SimpleConfigSpec.BooleanValue mLinearMetrics;
+        public final SimpleConfigSpec.IntValue mMinPixelDensityForSDF;
+        public final SimpleConfigSpec.BooleanValue mLinearSamplingA8Atlas;
+        //public final SimpleConfigSpec.BooleanValue mLinearSampling;
 
-        //private final ModConfigSpec.BooleanValue antiAliasing;
-        //private final ModConfigSpec.BooleanValue highPrecision;
-        //private final ModConfigSpec.BooleanValue enableMipmap;
-        //private final ModConfigSpec.IntValue mipmapLevel;
-        //private final ModConfigSpec.IntValue resolutionLevel;
-        //private final ModConfigSpec.IntValue defaultFontSize;
+        //private final SimpleConfigSpec.BooleanValue antiAliasing;
+        //private final SimpleConfigSpec.BooleanValue highPrecision;
+        //private final SimpleConfigSpec.BooleanValue enableMipmap;
+        //private final SimpleConfigSpec.IntValue mipmapLevel;
+        //private final SimpleConfigSpec.IntValue resolutionLevel;
+        //private final SimpleConfigSpec.IntValue defaultFontSize;
 
-        private Text(@Nonnull ModConfigSpec.Builder builder) {
+        private Text(@Nonnull SimpleConfigSpec.Builder builder) {
             builder.comment("Text Engine Config")
                     .push("text");
 
@@ -902,7 +851,7 @@ public final class ConfigImpl {
     // if on dedicated server, all config data will sync to remote client via network
     /*public static class Server {
 
-        private Server(@Nonnull ModConfigSpec.Builder builder) {
+        private Server(@Nonnull SimpleConfigSpec.Builder builder) {
 
         }
 

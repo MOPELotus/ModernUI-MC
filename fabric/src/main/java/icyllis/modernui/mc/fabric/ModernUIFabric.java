@@ -18,13 +18,10 @@
 
 package icyllis.modernui.mc.fabric;
 
-import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
-import fuzs.forgeconfigapiport.fabric.api.v5.ModConfigEvents;
 import icyllis.modernui.ModernUI;
 import icyllis.modernui.mc.ModernUIMod;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.neoforged.fml.config.ModConfig;
 
 public class ModernUIFabric extends ModernUIMod implements ModInitializer {
 
@@ -42,10 +39,7 @@ public class ModernUIFabric extends ModernUIMod implements ModInitializer {
         sLegendaryTooltipsLoaded = FabricLoader.getInstance().isModLoaded("legendarytooltips");
         sUntranslatedItemsLoaded = FabricLoader.getInstance().isModLoaded("untranslateditems");
 
-        ModConfigEvents.loading(ModernUI.ID).register(ConfigImpl::reloadCommon);
-        ModConfigEvents.reloading(ModernUI.ID).register(ConfigImpl::reloadCommon);
-        ConfigRegistry.INSTANCE.register(ModernUI.ID, ModConfig.Type.COMMON, ConfigImpl.COMMON_SPEC,
-                ModernUI.NAME_CPT + "/common.toml");
+        ConfigImpl.loadCommon();
 
         LOGGER.info(MARKER, "Initialized Modern UI");
     }
