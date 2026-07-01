@@ -80,8 +80,10 @@ public final class FontDefaults {
             case 500 -> TextAttribute.WEIGHT_SEMIBOLD;
             case 600 -> TextAttribute.WEIGHT_MEDIUM;
             case 700 -> TextAttribute.WEIGHT_DEMIBOLD;
-            case 800 -> TextAttribute.WEIGHT_BOLD;
-            case 900 -> TextAttribute.WEIGHT_HEAVY;
+            // Java treats weight >= 2.0 as Font.BOLD, but ModernUI stores the
+            // regular face in a slot that must report FontPaint.NORMAL.
+            case 800 -> 1.9f;
+            case 900 -> 1.999f;
             default -> TextAttribute.WEIGHT_REGULAR;
         };
     }

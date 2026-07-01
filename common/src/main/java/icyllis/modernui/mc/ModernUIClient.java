@@ -355,6 +355,12 @@ public abstract class ModernUIClient extends ModernUI {
             Map<TextAttribute, Object> attributes = new HashMap<>();
             attributes.put(TextAttribute.WEIGHT, FontDefaults.toTextAttributeWeight(sFontWeight));
             java.awt.Font weightedFont = baseFont.deriveFont(attributes);
+            if (weightedFont.getStyle() != java.awt.Font.PLAIN) {
+                LOGGER.warn(MARKER,
+                        "Cannot apply MiSans font weight {} to '{}', regular face resolved to AWT style {}",
+                        sFontWeight, familyName, weightedFont.getStyle());
+                return null;
+            }
             return constructor.newInstance(weightedFont, false);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             LOGGER.warn(MARKER, "Failed to apply MiSans font weight {} to '{}'",
