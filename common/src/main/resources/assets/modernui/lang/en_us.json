@@ -151,7 +151,7 @@
   "modernui.center.font.colorEmoji": "Color Emoji",
   "modernui.center.font.colorEmoji.tooltip": "When enabled, Google Noto Color Emoji will be included in font itemization. Otherwise, Emoji will render in black and white.",
   "modernui.center.font.fontWeight": "Font Weight",
-  "modernui.center.font.fontWeight.tooltip": "Switches MiSans variable-font weight in discrete 100-900 steps. Requires the MiSans VF font families to be registered.",
+  "modernui.center.font.fontWeight.tooltip": "Switches MiSans weight in discrete 100-900 steps by selecting concrete MiSans font files from the registered font directories.",
   "modernui.center.font.vanillaFont": "Use Vanilla Default Font",
   "modernui.center.font.antiAliasing": "Anti-aliasing",
   "modernui.center.font.linearMetrics": "Linear Metrics",

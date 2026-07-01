@@ -150,7 +150,7 @@
   "modernui.center.font.colorEmoji": "彩色表情圖案",
   "modernui.center.font.colorEmoji.tooltip": "啟用時，Google Noto 彩色表情圖案將包含在字型項目中。否則，表情圖案將以黑白方式呈現。",
   "modernui.center.font.fontWeight": "字型字重",
-  "modernui.center.font.fontWeight.tooltip": "以 100-900 的離散檔位切換 MiSans 可變字型字重。需要先註冊 MiSans VF 字型系列。",
+  "modernui.center.font.fontWeight.tooltip": "以 100-900 的離散檔位切換 MiSans 字重，會從已註冊字型目錄中選擇對應的 MiSans 實體字重檔案。",
   "modernui.center.font.vanillaFont": "使用原版預設字型",
   "modernui.center.font.antiAliasing": "抗鋸齒",
   "modernui.center.font.linearMetrics": "線性度量",

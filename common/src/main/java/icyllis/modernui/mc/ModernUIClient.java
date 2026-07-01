@@ -28,11 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -96,9 +93,6 @@ public abstract class ModernUIClient extends ModernUI {
     // font dir/paths to register
     public static volatile List<? extends String> sFontRegistrationList;
     public static volatile int sFontWeight = FontDefaults.DEFAULT_FONT_WEIGHT;
-
-    private static volatile Constructor<FontFamily> sAwtFontFamilyConstructor;
-    private static volatile boolean sAwtFontFamilyConstructorUnavailable;
 
     protected volatile Typeface mTypeface;
     protected volatile FontFamily mFirstFontFamily;
@@ -299,6 +293,23 @@ public abstract class ModernUIClient extends ModernUI {
             return true;
         } catch (Exception ignored) {
         }
+        if (FontDefaults.isWeightControlledFontFamily(value)) {
+            FontFamily family = loadWeightedMiSansFont(value);
+            if (family != null) {
+                selected.add(family);
+                if (firstSetter != null) {
+                    firstSetter.accept(family);
+                }
+                return true;
+            }
+            LOGGER.error(MARKER,
+                    "Required MiSans font files for '{}' weight {} are missing. Put MiSans font files in '{}' " +
+                            "or set fontRegistrationList to their directory/file. Expected one of: {}",
+                    value, FontDefaults.normalizeFontWeight(sFontWeight),
+                    FontDefaults.MODPACK_FONT_DIRECTORY,
+                    String.join(", ", FontDefaults.createWeightedFontFileNames(value, sFontWeight)));
+            return false;
+        }
         FontFamily family = FontFamily.getSystemFontWithAlias(value);
         if (family == null) {
             Optional<FontFamily> optional = FontFamily.getSystemFontMap().values().stream()
@@ -309,10 +320,6 @@ public abstract class ModernUIClient extends ModernUI {
             }
         }
         if (family != null) {
-            FontFamily weightedFamily = createWeightedFontFamily(value, family);
-            if (weightedFamily != null) {
-                family = weightedFamily;
-            }
             selected.add(family);
             LOGGER.debug(MARKER, "Font '{}' was loaded with config value '{}' as SYSTEM FONT",
                     family.getFamilyName(), value);
@@ -333,66 +340,102 @@ public abstract class ModernUIClient extends ModernUI {
     }
 
     @Nullable
-    private static FontFamily createWeightedFontFamily(@Nonnull String value,
-                                                       @Nonnull FontFamily family) {
-        String familyName = family.getFamilyName();
-        if (!FontDefaults.isWeightControlledFontFamily(value) &&
-                !FontDefaults.isWeightControlledFontFamily(familyName)) {
+    private static FontFamily loadWeightedMiSansFont(@Nonnull String value) {
+        List<String> fileNames = FontDefaults.createWeightedFontFileNames(value, sFontWeight);
+        if (fileNames.isEmpty()) {
             return null;
         }
-        Constructor<FontFamily> constructor = getAwtFontFamilyConstructor();
-        if (constructor == null) {
-            return null;
-        }
-        java.awt.Font baseFont = new java.awt.Font(familyName, java.awt.Font.PLAIN, 1);
-        if (!baseFont.getFamily(Locale.ROOT).equalsIgnoreCase(familyName)) {
-            LOGGER.warn(MARKER,
-                    "Cannot apply MiSans font weight {}, family '{}' is not available as an AWT font",
-                    sFontWeight, familyName);
+        File file = findRegisteredFontFile(fileNames);
+        if (file == null) {
             return null;
         }
         try {
-            Map<TextAttribute, Object> attributes = new HashMap<>();
-            attributes.put(TextAttribute.WEIGHT, FontDefaults.toTextAttributeWeight(sFontWeight));
-            java.awt.Font weightedFont = baseFont.deriveFont(attributes);
-            if (weightedFont.getStyle() != java.awt.Font.PLAIN) {
-                LOGGER.warn(MARKER,
-                        "Cannot apply MiSans font weight {} to '{}', regular face resolved to AWT style {}",
-                        sFontWeight, familyName, weightedFont.getStyle());
-                return null;
-            }
-            return constructor.newInstance(weightedFont, false);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            LOGGER.warn(MARKER, "Failed to apply MiSans font weight {} to '{}'",
-                    sFontWeight, familyName, e);
+            FontFamily family = FontFamily.createFamily(file, /*register*/false);
+            LOGGER.info(MARKER, "Loaded MiSans font '{}' for config value '{}' weight {} from '{}'",
+                    family.getFamilyName(), value, FontDefaults.normalizeFontWeight(sFontWeight), file);
+            return family;
+        } catch (Exception e) {
+            LOGGER.warn(MARKER, "Failed to load MiSans font file '{}' for config value '{}' weight {}",
+                    file, value, FontDefaults.normalizeFontWeight(sFontWeight), e);
             return null;
         }
     }
 
     @Nullable
-    private static Constructor<FontFamily> getAwtFontFamilyConstructor() {
-        if (sAwtFontFamilyConstructorUnavailable) {
+    private static File findRegisteredFontFile(@Nonnull List<String> fileNames) {
+        LinkedHashSet<Path> roots = new LinkedHashSet<>();
+        List<? extends String> registrationList = sFontRegistrationList;
+        if (registrationList != null) {
+            for (String value : new LinkedHashSet<>(registrationList)) {
+                try {
+                    Path path = resolveFontRegistrationPath(value);
+                    if (Files.isDirectory(path)) {
+                        roots.add(path);
+                    } else if (Files.isRegularFile(path)) {
+                        if (containsFileName(fileNames, path.getFileName())) {
+                            return path.toFile();
+                        }
+                        Path parent = path.getParent();
+                        if (parent != null) {
+                            roots.add(parent);
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        if (roots.isEmpty()) {
+            roots.add(resolveFontRegistrationPath(FontDefaults.MODPACK_FONT_DIRECTORY));
+        }
+        for (String fileName : fileNames) {
+            for (Path root : roots) {
+                File file = findFontFile(root, fileName);
+                if (file != null) {
+                    return file;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean containsFileName(@Nonnull List<String> fileNames,
+                                            @Nullable Path fileName) {
+        if (fileName == null) {
+            return false;
+        }
+        String name = fileName.toString();
+        for (String expected : fileNames) {
+            if (expected.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    private static File findFontFile(@Nonnull Path root,
+                                     @Nonnull String fileName) {
+        if (!Files.exists(root)) {
             return null;
         }
-        Constructor<FontFamily> constructor = sAwtFontFamilyConstructor;
-        if (constructor != null) {
-            return constructor;
+        if (Files.isRegularFile(root)) {
+            return fileName.equalsIgnoreCase(root.getFileName().toString())
+                    ? root.toFile()
+                    : null;
         }
-        synchronized (ModernUIClient.class) {
-            constructor = sAwtFontFamilyConstructor;
-            if (constructor != null) {
-                return constructor;
-            }
-            try {
-                constructor = FontFamily.class.getDeclaredConstructor(java.awt.Font.class, boolean.class);
-                constructor.setAccessible(true);
-                sAwtFontFamilyConstructor = constructor;
-                return constructor;
-            } catch (ReflectiveOperationException | RuntimeException e) {
-                sAwtFontFamilyConstructorUnavailable = true;
-                LOGGER.warn(MARKER, "MiSans font weight control is unavailable", e);
-                return null;
-            }
+        Path direct = root.resolve(fileName);
+        if (Files.isRegularFile(direct)) {
+            return direct.toFile();
+        }
+        try (var paths = Files.walk(root)) {
+            Optional<Path> match = paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> fileName.equalsIgnoreCase(path.getFileName().toString()))
+                    .findFirst();
+            return match.map(Path::toFile).orElse(null);
+        } catch (IOException e) {
+            LOGGER.warn(MARKER, "Failed to scan font directory '{}' for '{}'", root, fileName, e);
+            return null;
         }
     }
 

@@ -126,7 +126,7 @@
   "modernui.center.font.colorEmoji": "Колір Емодзі",
   "modernui.center.font.colorEmoji.tooltip": "Якщо увімкнено, кольорові емодзі Google Noto будуть включені. В іншому випадку емодзі будуть відображатись чорно-білими.",
   "modernui.center.font.fontWeight": "Font Weight",
-  "modernui.center.font.fontWeight.tooltip": "Switches MiSans variable-font weight in discrete 100-900 steps. Requires the MiSans VF font families to be registered.",
+  "modernui.center.font.fontWeight.tooltip": "Switches MiSans weight in discrete 100-900 steps by selecting concrete MiSans font files from the registered font directories.",
   "modernui.center.font.vanillaFont": "Звичайний шрифт",
   "modernui.center.font.antiAliasing": "Згладжування",
   "modernui.center.font.linearSampling": "Лінійна вибірка",

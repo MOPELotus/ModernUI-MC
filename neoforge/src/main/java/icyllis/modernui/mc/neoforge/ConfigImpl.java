@@ -542,7 +542,7 @@ public final class ConfigImpl {
             builder.comment("Font Config")
                     .push("font");
 
-            // MiSans VF, MiSans L3, MiSans Latin VF, Misans TC VF
+            // MiSans, MiSans L3, MiSans Latin, MiSans TC
             mFirstFontFamily = builder.comment(
                             "The first font family to use. See fallbackFontFamilyList")
                     .define("firstFontFamily", FontDefaults.FIRST_FONT_FAMILY);
@@ -571,7 +571,7 @@ public final class ConfigImpl {
                             "This is only read once when the game is loaded, i.e. registration.")
                     .defineList("fontRegistrationList", FontDefaults::createFontRegistrationList, s -> true);
             mFontWeight = builder.comment(
-                            "The variable MiSans font weight. Values are discrete CSS-like weights.")
+                            "The MiSans font weight. Values are discrete CSS-like weights and select concrete font files.")
                     .defineInRange("fontWeight", FontDefaults.DEFAULT_FONT_WEIGHT,
                             FontDefaults.FONT_WEIGHT_MIN, FontDefaults.FONT_WEIGHT_MAX);
             mUseColorEmoji = builder.comment(
