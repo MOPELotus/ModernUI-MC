@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -184,20 +185,7 @@ public abstract class ModernUIClient extends ModernUI {
             var registrationList = sFontRegistrationList;
             if (registrationList != null) {
                 for (var value : new LinkedHashSet<>(registrationList)) {
-                    File file = new File(value.replaceAll("\\\\", "/"));
-                    final File[] entries;
-                    if (file.isDirectory()) {
-                        entries = file.listFiles((dir, name) -> name.endsWith(".ttf") ||
-                                name.endsWith(".otf") ||
-                                name.endsWith(".ttc") ||
-                                name.endsWith(".otc"));
-                        if (entries == null) {
-                            continue;
-                        }
-                    } else {
-                        entries = new File[]{file};
-                    }
-                    for (File entry : entries) {
+                    for (File entry : collectFontRegistrationFiles(value)) {
                         tasks.add(CompletableFuture.runAsync(
                                 () -> {
                                     try {
@@ -220,11 +208,7 @@ public abstract class ModernUIClient extends ModernUI {
             var directory = Minecraft.getInstance().getResourcePackDirectory();
             try (var paths = Files.newDirectoryStream(directory)) {
                 for (var p : paths) {
-                    String name = p.getFileName().toString();
-                    if (name.endsWith(".ttf") ||
-                            name.endsWith(".otf") ||
-                            name.endsWith(".ttc") ||
-                            name.endsWith(".otc")) {
+                    if (isFontFile(p)) {
                         Path absP = p.toAbsolutePath();
                         tasks.add(CompletableFuture.runAsync(
                                 () -> {
@@ -297,7 +281,7 @@ public abstract class ModernUIClient extends ModernUI {
             return true;
         }
         try {
-            File f = new File(value.replaceAll("\\\\", "/"));
+            File f = resolveFontRegistrationPath(value).toFile();
             FontFamily family = FontFamily.createFamily(f, /*register*/false);
             selected.add(family);
             LOGGER.debug(MARKER, "Font '{}' was loaded with config value '{}' as LOCAL FILE",
@@ -326,8 +310,71 @@ public abstract class ModernUIClient extends ModernUI {
             }
             return true;
         }
-        LOGGER.info(MARKER, "Font '{}' failed to load or invalid", value);
+        if (FontDefaults.isRequiredFontFamily(value)) {
+            LOGGER.error(MARKER,
+                    "Required MiSans font family '{}' is missing. Put MiSans font files in '{}' " +
+                            "or set fontRegistrationList to their directory/file.",
+                    value, FontDefaults.MODPACK_FONT_DIRECTORY);
+        } else {
+            LOGGER.info(MARKER, "Font '{}' failed to load or invalid", value);
+        }
         return false;
+    }
+
+    @Nonnull
+    private static List<File> collectFontRegistrationFiles(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return List.of();
+        }
+        final Path path;
+        try {
+            path = resolveFontRegistrationPath(value);
+        } catch (Exception e) {
+            LOGGER.error(MARKER, "Font registration path '{}' is invalid", value, e);
+            return List.of();
+        }
+        if (!Files.exists(path)) {
+            LOGGER.warn(MARKER, "Font registration path '{}' does not exist", path);
+            return List.of();
+        }
+        if (Files.isDirectory(path)) {
+            try (var paths = Files.walk(path)) {
+                return paths
+                        .filter(Files::isRegularFile)
+                        .filter(ModernUIClient::isFontFile)
+                        .map(Path::toFile)
+                        .toList();
+            } catch (IOException e) {
+                LOGGER.error(MARKER, "Failed to scan font registration directory '{}'", path, e);
+                return List.of();
+            }
+        }
+        if (isFontFile(path)) {
+            return List.of(path.toFile());
+        }
+        LOGGER.warn(MARKER, "Font registration path '{}' is not a supported font file", path);
+        return List.of();
+    }
+
+    @Nonnull
+    private static Path resolveFontRegistrationPath(String value) {
+        Path path = Path.of(value.replace('\\', '/'));
+        if (!path.isAbsolute()) {
+            path = Minecraft.getInstance().gameDirectory.toPath().resolve(path);
+        }
+        return path.normalize().toAbsolutePath();
+    }
+
+    private static boolean isFontFile(Path path) {
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            return false;
+        }
+        String name = fileName.toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(".ttf") ||
+                name.endsWith(".otf") ||
+                name.endsWith(".ttc") ||
+                name.endsWith(".otc");
     }
 
     @Nonnull

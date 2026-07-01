@@ -21,6 +21,7 @@ package icyllis.modernui.mc.forge;
 import icyllis.modernui.R;
 import icyllis.modernui.mc.Config;
 import icyllis.modernui.mc.ConfigItem;
+import icyllis.modernui.mc.FontDefaults;
 import icyllis.modernui.mc.ModernUIClient;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.text.TextLayout;
@@ -541,11 +542,10 @@ public final class ConfigImpl {
             builder.comment("Font Config")
                     .push("font");
 
-            // Segoe UI, Source Han Sans CN Medium, Noto Sans, Open Sans, San Francisco, Calibri,
-            // Microsoft YaHei UI, STHeiti, SimHei, SansSerif
+            // MiSans, MiSans L3, MiSans Latin, MiSans TC
             mFirstFontFamily = builder.comment(
                             "The first font family to use. See fallbackFontFamilyList")
-                    .define("firstFontFamily", "Inter Frozen Medium");
+                    .define("firstFontFamily", FontDefaults.FIRST_FONT_FAMILY);
             mFallbackFontFamilyList = builder.comment(
                             "A set of fallback font families to determine the typeface to use.",
                             "The order is first > fallbacks. TrueType & OpenType are supported.",
@@ -560,28 +560,16 @@ public final class ConfigImpl {
                             "Note that for TTC/OTC font, you should register it and select one of font families.",
                             "Otherwise, only the first font family from the TrueType/OpenType Collection will be used.",
                             "This is only read once when the game is loaded, you can reload via in-game GUI.")
-                    .defineList("fallbackFontFamilyList", () -> {
-                        List<String> list = new ArrayList<>();
-                        list.add("Source Han Sans CN Medium");
-                        list.add("Noto Sans");
-                        list.add("Segoe UI Variable");
-                        list.add("Segoe UI");
-                        list.add("San Francisco");
-                        list.add("Open Sans");
-                        list.add("SimHei");
-                        list.add("STHeiti");
-                        list.add("Segoe UI Symbol");
-                        list.add("mui-i18n-compat");
-                        return list;
-                    }, s -> true);
+                    .defineList("fallbackFontFamilyList", FontDefaults::createFallbackFontFamilyList, s -> true);
             mFontRegistrationList = builder.comment(
                             "A set of additional font files (or directories) to register.",
                             "For TrueType/OpenType Collections, all contained font families will be registered.",
                             "Registered fonts can be referenced in Modern UI and Minecraft (Modern Text Engine).",
                             "For example, \"E:/Fonts\" means all font files in that directory will be registered.",
+                            "Relative paths are resolved against the game directory; directories are scanned recursively.",
                             "System requires random access to these files, you should not remove them while running.",
                             "This is only read once when the game is loaded, i.e. registration.")
-                    .defineList("fontRegistrationList", ArrayList::new, s -> true);
+                    .defineList("fontRegistrationList", FontDefaults::createFontRegistrationList, s -> true);
             mUseColorEmoji = builder.comment(
                             "Whether to use Google Noto Color Emoji, otherwise grayscale emoji (faster).",
                             "See Unicode 15.0 specification for details on how this affects text layout.")
