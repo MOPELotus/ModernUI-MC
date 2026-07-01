@@ -125,6 +125,8 @@
   "modernui.center.font.fallbackFonts.tooltip": "Набір запасних сімейств шрифтів для списку шрифтів за замовчуванням.\nПідтримуються винесені шрифти (TrueType/OpenType), кожен рядок може містити один з наступних двох випадків:\n1) Назва сімейства шрифтів англійською мовою для зареєстрованих шрифтів, наприклад, SeoEI: Segoe UI\n2) Абсолютний шлях для файлів шрифтів на вашому комп'ютері, наприклад: D:/Fonts/Andy Bold.ttf\nЗверніть увагу, що для шрифту TTC/OTC рекомендується зареєструвати його і вибрати одну з сімейств шрифтів. Інакше буде використано лише першу сім'ю шрифтів з колекції.",
   "modernui.center.font.colorEmoji": "Колір Емодзі",
   "modernui.center.font.colorEmoji.tooltip": "Якщо увімкнено, кольорові емодзі Google Noto будуть включені. В іншому випадку емодзі будуть відображатись чорно-білими.",
+  "modernui.center.font.fontWeight": "Font Weight",
+  "modernui.center.font.fontWeight.tooltip": "Switches MiSans variable-font weight in discrete 100-900 steps. Requires the MiSans VF font families to be registered.",
   "modernui.center.font.vanillaFont": "Звичайний шрифт",
   "modernui.center.font.antiAliasing": "Згладжування",
   "modernui.center.font.linearSampling": "Лінійна вибірка",

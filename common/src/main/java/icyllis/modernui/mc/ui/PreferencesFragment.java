@@ -38,6 +38,7 @@ import icyllis.modernui.graphics.drawable.StateListDrawable;
 import icyllis.modernui.graphics.text.FontFamily;
 import icyllis.modernui.mc.Config;
 import icyllis.modernui.mc.ConfigItem;
+import icyllis.modernui.mc.FontDefaults;
 import icyllis.modernui.mc.ModernUIClient;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.MuiModApi;
@@ -473,6 +474,16 @@ public class PreferencesFragment extends Fragment {
             /*list.addView(createBooleanOption(context, "modernui.center.font.vanillaFont",
                     ModernUIText.CONFIG.mUseVanillaFont,
                     ModernUIText.CONFIG::saveAndReloadAsync));*/
+
+            new IntegerOption(context, "modernui.center.font.fontWeight",
+                    FontDefaults.FONT_WEIGHT_STEP,
+                    Config.CLIENT.mFontWeight,
+                    value -> Config.CLIENT.mFontWeight.set(FontDefaults.normalizeFontWeight(value)),
+                    () -> {
+                        mOnClientConfigChanged.run();
+                        reloadDefaultTypeface(context, null);
+                    })
+                    .create(category, 3);
 
             new BooleanOption(context, "modernui.center.font.colorEmoji",
                     Config.CLIENT.mUseColorEmoji, () -> {

@@ -28,8 +28,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -92,6 +95,10 @@ public abstract class ModernUIClient extends ModernUI {
     public static volatile List<? extends String> sFallbackFontFamilyList;
     // font dir/paths to register
     public static volatile List<? extends String> sFontRegistrationList;
+    public static volatile int sFontWeight = FontDefaults.DEFAULT_FONT_WEIGHT;
+
+    private static volatile Constructor<FontFamily> sAwtFontFamilyConstructor;
+    private static volatile boolean sAwtFontFamilyConstructorUnavailable;
 
     protected volatile Typeface mTypeface;
     protected volatile FontFamily mFirstFontFamily;
@@ -302,6 +309,10 @@ public abstract class ModernUIClient extends ModernUI {
             }
         }
         if (family != null) {
+            FontFamily weightedFamily = createWeightedFontFamily(value, family);
+            if (weightedFamily != null) {
+                family = weightedFamily;
+            }
             selected.add(family);
             LOGGER.debug(MARKER, "Font '{}' was loaded with config value '{}' as SYSTEM FONT",
                     family.getFamilyName(), value);
@@ -319,6 +330,64 @@ public abstract class ModernUIClient extends ModernUI {
             LOGGER.info(MARKER, "Font '{}' failed to load or invalid", value);
         }
         return false;
+    }
+
+    @Nullable
+    private static FontFamily createWeightedFontFamily(@Nonnull String value,
+                                                       @Nonnull FontFamily family) {
+        String familyName = family.getFamilyName();
+        if (!FontDefaults.isWeightControlledFontFamily(value) &&
+                !FontDefaults.isWeightControlledFontFamily(familyName)) {
+            return null;
+        }
+        Constructor<FontFamily> constructor = getAwtFontFamilyConstructor();
+        if (constructor == null) {
+            return null;
+        }
+        java.awt.Font baseFont = new java.awt.Font(familyName, java.awt.Font.PLAIN, 1);
+        if (!baseFont.getFamily(Locale.ROOT).equalsIgnoreCase(familyName)) {
+            LOGGER.warn(MARKER,
+                    "Cannot apply MiSans font weight {}, family '{}' is not available as an AWT font",
+                    sFontWeight, familyName);
+            return null;
+        }
+        try {
+            Map<TextAttribute, Object> attributes = new HashMap<>();
+            attributes.put(TextAttribute.WEIGHT, FontDefaults.toTextAttributeWeight(sFontWeight));
+            java.awt.Font weightedFont = baseFont.deriveFont(attributes);
+            return constructor.newInstance(weightedFont, false);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            LOGGER.warn(MARKER, "Failed to apply MiSans font weight {} to '{}'",
+                    sFontWeight, familyName, e);
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Constructor<FontFamily> getAwtFontFamilyConstructor() {
+        if (sAwtFontFamilyConstructorUnavailable) {
+            return null;
+        }
+        Constructor<FontFamily> constructor = sAwtFontFamilyConstructor;
+        if (constructor != null) {
+            return constructor;
+        }
+        synchronized (ModernUIClient.class) {
+            constructor = sAwtFontFamilyConstructor;
+            if (constructor != null) {
+                return constructor;
+            }
+            try {
+                constructor = FontFamily.class.getDeclaredConstructor(java.awt.Font.class, boolean.class);
+                constructor.setAccessible(true);
+                sAwtFontFamilyConstructor = constructor;
+                return constructor;
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                sAwtFontFamilyConstructorUnavailable = true;
+                LOGGER.warn(MARKER, "MiSans font weight control is unavailable", e);
+                return null;
+            }
+        }
     }
 
     @Nonnull

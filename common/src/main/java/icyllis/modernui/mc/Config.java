@@ -143,6 +143,7 @@ public final class Config {
         public final ConfigItem<String> mFirstFontFamily;
         public final ConfigItem<List<? extends String>> mFallbackFontFamilyList;
         public final ConfigItem<List<? extends String>> mFontRegistrationList;
+        public final ConfigItem<Integer> mFontWeight;
         public final ConfigItem<Boolean> mUseColorEmoji;
         public final ConfigItem<Boolean> mLinearMetrics;
         public final ConfigItem<Boolean> mEmojiShortcodes;
@@ -214,6 +215,7 @@ public final class Config {
             mFirstFontFamily = get(map, "mFirstFontFamily");
             mFallbackFontFamilyList = get(map, "mFallbackFontFamilyList");
             mFontRegistrationList = get(map, "mFontRegistrationList");
+            mFontWeight = get(map, "mFontWeight");
             mUseColorEmoji = get(map, "mUseColorEmoji");
             mLinearMetrics = get(map, "mLinearMetrics");
             mEmojiShortcodes = get(map, "mEmojiShortcodes");
@@ -234,6 +236,11 @@ public final class Config {
             ModernUIClient.sFirstFontFamily = mFirstFontFamily.get();
             ModernUIClient.sFallbackFontFamilyList = mFallbackFontFamilyList.get();
             ModernUIClient.sFontRegistrationList = mFontRegistrationList.get();
+            int fontWeight = FontDefaults.normalizeFontWeight(mFontWeight.get());
+            if (fontWeight != mFontWeight.get()) {
+                mFontWeight.set(fontWeight);
+            }
+            ModernUIClient.sFontWeight = fontWeight;
 
             if (mPropagate) {
                 apply();

@@ -287,6 +287,7 @@ public final class ConfigImpl {
         public final ForgeConfigSpec.ConfigValue<String> mFirstFontFamily;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mFallbackFontFamilyList;
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mFontRegistrationList;
+        public final ForgeConfigSpec.IntValue mFontWeight;
         public final ForgeConfigSpec.BooleanValue mUseColorEmoji;
         public final ForgeConfigSpec.BooleanValue mLinearMetrics;
         public final ForgeConfigSpec.BooleanValue mEmojiShortcodes;
@@ -542,7 +543,7 @@ public final class ConfigImpl {
             builder.comment("Font Config")
                     .push("font");
 
-            // MiSans, MiSans L3, MiSans Latin, MiSans TC
+            // MiSans VF, MiSans L3, MiSans Latin VF, Misans TC VF
             mFirstFontFamily = builder.comment(
                             "The first font family to use. See fallbackFontFamilyList")
                     .define("firstFontFamily", FontDefaults.FIRST_FONT_FAMILY);
@@ -570,6 +571,10 @@ public final class ConfigImpl {
                             "System requires random access to these files, you should not remove them while running.",
                             "This is only read once when the game is loaded, i.e. registration.")
                     .defineList("fontRegistrationList", FontDefaults::createFontRegistrationList, s -> true);
+            mFontWeight = builder.comment(
+                            "The variable MiSans font weight. Values are discrete CSS-like weights.")
+                    .defineInRange("fontWeight", FontDefaults.DEFAULT_FONT_WEIGHT,
+                            FontDefaults.FONT_WEIGHT_MIN, FontDefaults.FONT_WEIGHT_MAX);
             mUseColorEmoji = builder.comment(
                             "Whether to use Google Noto Color Emoji, otherwise grayscale emoji (faster).",
                             "See Unicode 15.0 specification for details on how this affects text layout.")
