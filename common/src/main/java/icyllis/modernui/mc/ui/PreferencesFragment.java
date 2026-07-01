@@ -397,6 +397,8 @@ public class PreferencesFragment extends Fragment {
         transition.enableTransitionType(LayoutTransition.CHANGING);
         content.setLayoutTransition(transition);
 
+        Runnable[] onFontChanged = {() -> {}};
+
         {
             var category = createCategoryList(content, null);
 
@@ -414,10 +416,9 @@ public class PreferencesFragment extends Fragment {
                 params.setMargins(dp6, 0, dp6, 0);
                 firstLine.addView(title, params);
             }
-            Runnable onFontChanged;
             {
                 TextView value = new TextView(context);
-                onFontChanged = () -> {
+                onFontChanged[0] = () -> {
                     FontFamily first = ModernUIClient.getInstance().getFirstFontFamily();
                     if (first != null) {
                         value.setText(first.getFamilyName(value.getTextLocale()));
@@ -425,7 +426,7 @@ public class PreferencesFragment extends Fragment {
                         value.setText("NONE");
                     }
                 };
-                onFontChanged.run();
+                onFontChanged[0].run();
                 value.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 value.setTextSize(14);
 
@@ -434,22 +435,6 @@ public class PreferencesFragment extends Fragment {
                 params.setMargins(dp6, 0, dp6, 0);
                 firstLine.addView(value, params);
             }
-
-            var accordion = new PreferredFontAccordion(
-                    category,
-                    mOnClientConfigChanged,
-                    onFontChanged
-            );
-            firstLine.setOnClickListener(
-                    accordion
-            );
-            firstLine.setOnCreateContextMenuListener(
-                    accordion
-            );
-            TypedValue value = new TypedValue();
-            context.getTheme().resolveAttribute(R.ns, R.attr.colorControlHighlight, value, true);
-            firstLine.setBackground(new RippleDrawable(ColorStateList.valueOf(value.data), null,
-                    new ColorDrawable(~0)));
 
             firstLine.setMinimumHeight(firstLine.dp(36));
             var params = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
@@ -461,16 +446,6 @@ public class PreferencesFragment extends Fragment {
         {
             var category = createCategoryList(content, null);
 
-            {
-                var option = createStringListOption(context, "modernui.center.font.fallbackFonts",
-                        Config.CLIENT.mFallbackFontFamilyList,
-                        () -> {
-                            mOnClientConfigChanged.run();
-                            reloadDefaultTypeface(context, null);
-                        });
-                category.addView(option);
-            }
-
             /*list.addView(createBooleanOption(context, "modernui.center.font.vanillaFont",
                     ModernUIText.CONFIG.mUseVanillaFont,
                     ModernUIText.CONFIG::saveAndReloadAsync));*/
@@ -481,25 +456,16 @@ public class PreferencesFragment extends Fragment {
                     value -> Config.CLIENT.mFontWeight.set(FontDefaults.normalizeFontWeight(value)),
                     () -> {
                         mOnClientConfigChanged.run();
-                        reloadDefaultTypeface(context, null);
+                        reloadDefaultTypeface(context, onFontChanged[0]);
                     })
                     .create(category, 3);
 
             new BooleanOption(context, "modernui.center.font.colorEmoji",
                     Config.CLIENT.mUseColorEmoji, () -> {
                 mOnClientConfigChanged.run();
-                reloadDefaultTypeface(context, null);
+                reloadDefaultTypeface(context, onFontChanged[0]);
             })
                     .create(category);
-
-            category.addView(createStringListOption(context, "modernui.center.font.fontRegistrationList",
-                    Config.CLIENT.mFontRegistrationList, () -> {
-                        mClientConfigChanged = true;
-                        Toast.makeText(context,
-                                        I18n.get("gui.modernui.restart_to_work"),
-                                        Toast.LENGTH_SHORT)
-                                .show();
-                    }));
 
             new BooleanOption(context, "modernui.center.font.linearMetrics",
                     Config.CLIENT.mLinearMetrics, mOnClientConfigChanged)

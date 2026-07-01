@@ -233,9 +233,21 @@ public final class Config {
 
             ModernUIClient.sUseColorEmoji = mUseColorEmoji.get();
             ModernUIClient.sEmojiShortcodes = mEmojiShortcodes.get();
-            ModernUIClient.sFirstFontFamily = mFirstFontFamily.get();
-            ModernUIClient.sFallbackFontFamilyList = mFallbackFontFamilyList.get();
-            ModernUIClient.sFontRegistrationList = mFontRegistrationList.get();
+            String firstFontFamily = FontDefaults.FIRST_FONT_FAMILY;
+            List<String> fallbackFontFamilyList = FontDefaults.createFallbackFontFamilyList();
+            if (!Objects.equals(mFirstFontFamily.get(), firstFontFamily)) {
+                mFirstFontFamily.set(firstFontFamily);
+            }
+            if (!Objects.equals(mFallbackFontFamilyList.get(), fallbackFontFamilyList)) {
+                mFallbackFontFamilyList.set(fallbackFontFamilyList);
+            }
+            List<String> fontRegistrationList = FontDefaults.createFontRegistrationList();
+            if (!Objects.equals(mFontRegistrationList.get(), fontRegistrationList)) {
+                mFontRegistrationList.set(fontRegistrationList);
+            }
+            ModernUIClient.sFirstFontFamily = firstFontFamily;
+            ModernUIClient.sFallbackFontFamilyList = fallbackFontFamilyList;
+            ModernUIClient.sFontRegistrationList = fontRegistrationList;
             int fontWeight = FontDefaults.normalizeFontWeight(mFontWeight.get());
             if (fontWeight != mFontWeight.get()) {
                 mFontWeight.set(fontWeight);

@@ -142,7 +142,7 @@
   "modernui.center.text.rehashThreshold": "快取重新雜湊閾值",
   "modernui.center.text.minPixelDensityForSDF": "SDF/3D 文字的最低像素密度需求",
   "modernui.center.text.minPixelDensityForSDF.tooltip": "Control the minimum resolution level for SDF text and text in world, as well as the upper limit for uniformly scaling text. It is recommended to set a larger value on high-resolution monitors, and the effective value will be no lower than the current GUI scale.",
-  "modernui.center.font.firstFont": "偏好的字型家族",
+  "modernui.center.font.firstFont": "目前字型",
   "modernui.center.font.chooseFont": "選擇一個字型",
   "modernui.center.font.openFontFile": "開啟字型檔案",
   "modernui.center.font.fallbackFonts": "後備字型系列清單",

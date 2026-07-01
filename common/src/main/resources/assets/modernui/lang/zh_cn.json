@@ -143,7 +143,7 @@
   "modernui.center.text.rehashThreshold": "缓存重哈希阈值",
   "modernui.center.text.minPixelDensityForSDF": "SDF或3D文字的最小像素密度",
   "modernui.center.text.minPixelDensityForSDF.tooltip": "控制SDF文字和世界中文字的最小分辨率等级，也控制均匀缩放文字大小的上限。在高分辨率显示器上推荐设置较大的值，实际生效的值不会低于当前的界面比例。",
-  "modernui.center.font.firstFont": "首选字体家族",
+  "modernui.center.font.firstFont": "当前字体",
   "modernui.center.font.chooseFont": "选择一个字体",
   "modernui.center.font.openFontFile": "打开字体文件",
   "modernui.center.font.fallbackFonts": "回退字体家族列表",
