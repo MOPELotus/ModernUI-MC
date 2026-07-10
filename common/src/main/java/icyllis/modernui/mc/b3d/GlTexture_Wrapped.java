@@ -73,16 +73,6 @@ public class GlTexture_Wrapped extends GlTexture {
         }
     }
 
-    // we can increment usage cnt if not reached to zero,
-    // to use the same wrapper object.
-    // otherwise cause an assertion error
-    public void touch() {
-        if (closed) {
-            closed = false;
-            source.ref();
-        }
-    }
-
     @Override
     public void addViews() {
     }

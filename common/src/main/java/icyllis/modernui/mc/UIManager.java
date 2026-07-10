@@ -1006,9 +1006,6 @@ public abstract class UIManager implements LifecycleOwner {
                     mLayerTexture = new GlTexture_Wrapped(layer); // move
                     mLayerTextureView = (GlTextureView) RenderSystem.getDevice()
                             .createTextureView(mLayerTexture);
-                } else {
-                    // ensure there's ref before submitting to the GPU
-                    mLayerTexture.touch();
                 }
                 gr.nextStratum();
                 MuiModApi.get().submitGuiElementRenderState(gr, new BlitRenderState(
@@ -1188,10 +1185,6 @@ public abstract class UIManager implements LifecycleOwner {
                 mLastPurgeNanos = mFrameTimeNanos;
                 context.performDeferredCleanup(120_000);
             }
-            if (mLayerTexture != null) {
-                // we can drop the ref after submitting to the GPU
-                mLayerTexture.close();
-            }
             if (mLayerTexture_Vulkan != null && mLastSubmittedVulkanLayer != null) {
                 if (ModernUIMod.isVulkanBackend()) {
                     NativeVulkanIntegration.syncImageLayoutFromVulkan(mLayerTexture_Vulkan, mLastSubmittedVulkanLayer);
@@ -1202,6 +1195,7 @@ public abstract class UIManager implements LifecycleOwner {
                 requestShutdown();
                 if (mLayerTexture != null) {
                     mLayerTextureView.close();
+                    mLayerTexture.close();
                     mLayerTextureView = null;
                     mLayerTexture = null;
                 }
