@@ -257,5 +257,10 @@ public class ModernUIFabricClient extends ModernUIClient implements ClientModIni
         public boolean createCycleButton() {
             return false;
         }
+
+        @Override
+        public boolean applyValueImmediately() {
+            return false;
+        }
     }
 }

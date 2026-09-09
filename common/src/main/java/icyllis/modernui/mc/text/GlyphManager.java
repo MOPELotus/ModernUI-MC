@@ -585,6 +585,10 @@ public class GlyphManager {
         ByteBuffer src = (mImageBuffer.flip());
 
         boolean success = atlas.stitch(glyph, src, null);
+
+        mGraphics.clearRect(0, 0, mImage.getWidth(), mImage.getHeight());
+        mImageBuffer.clear();
+
         if (!success) {
             // invalidate glyph image and defer to next frame
             glyph.x = Integer.MIN_VALUE;
@@ -595,8 +599,6 @@ public class GlyphManager {
                 .computeIfAbsent(standardWidth, __ -> new FastCharSet())
                 .glyphs.add(glyph);
 
-        mGraphics.clearRect(0, 0, mImage.getWidth(), mImage.getHeight());
-        mImageBuffer.clear();
         return glyph;
     }
 
