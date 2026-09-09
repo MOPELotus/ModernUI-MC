@@ -181,6 +181,7 @@ public abstract class ModernUIClient extends ModernUI {
                                  @Nonnull Consumer<FontFamily> firstSetter,
                                  boolean firstLoad) {
         if (firstLoad) {
+            MiSansSetup.ensureInstalled(resolveFontRegistrationPath(FontDefaults.MODPACK_FONT_DIRECTORY));
             var tasks = new ArrayList<CompletableFuture<Void>>();
             var fontManager = FontResourceManager.getInstance();
             var registrationList = sFontRegistrationList;
@@ -264,6 +265,10 @@ public abstract class ModernUIClient extends ModernUI {
                 }
             }
             CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
+        }
+        if (MiSansSetup.required) {
+            loadSingleFont("Source Han Sans CN Medium", selected, firstSetter);
+            return;
         }
         boolean success = loadSingleFont(first, selected, firstSetter);
         for (String fallback : fallbacks) {

@@ -66,6 +66,13 @@ public class MixinRenderSystem {
         options.mDriverBugWorkarounds = ModernUIClient.getGpuDriverBugWorkarounds();
         switch (device.getDeviceInfo().backendName()) {
             case "OpenGL" -> {
+                // Minecraft 26.2 uses zero-to-one clipping when ARB_clip_control is available.
+                // Match the shared context before Arc3D builds its projection shaders.
+                options.mDepthClipNegativeOneToOne = !GL.getCapabilities().GL_ARB_clip_control ||
+                        org.lwjgl.opengl.GL33C.glGetInteger(org.lwjgl.opengl.ARBClipControl.GL_CLIP_DEPTH_MODE) ==
+                                org.lwjgl.opengl.ARBClipControl.GL_NEGATIVE_ONE_TO_ONE;
+                ModernUIMod.LOGGER.info(ModernUIMod.MARKER, "Arc3D OpenGL depth clip range: {}",
+                        options.mDepthClipNegativeOneToOne ? "-1..1" : "0..1");
                 ModernUIMod.setVulkanBackend(false);
                 if (!Core.initOpenGL(options)) {
                     throw new IllegalStateException("Failed to create OpenGL device");
