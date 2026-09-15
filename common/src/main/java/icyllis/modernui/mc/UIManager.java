@@ -96,7 +96,6 @@ import java.util.*;
 import static icyllis.modernui.mc.ModernUIMod.LOGGER;
 import static com.mojang.blaze3d.platform.InputConstants.*;
 import org.lwjgl.sdl.SDLKeyboard;
-import org.lwjgl.sdl.SDLMouse;
 import org.lwjgl.sdl.SDLVideo;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
@@ -581,6 +580,15 @@ public abstract class UIManager implements LifecycleOwner {
     }
 
     public void onPostMouseInput(int button, int action, int mods) {
+        int actionButton = SdlInput.toModernButton(button);
+        if (actionButton == 0) {
+            return;
+        }
+        // SDL's cached state includes the whole event pump. A queued release
+        // may already be reflected there while we are handling its press.
+        // Track each event, including those outside a ModernUI screen.
+        int buttonState = action == PRESS ? mButtonState | actionButton : mButtonState & ~actionButton;
+        mButtonState = buttonState;
         // We should ensure (overlay == null && screen != null)
         // and the screen must be a mui screen
         if (minecraft.gui.overlay() == null && mScreen != null) {
@@ -590,13 +598,10 @@ public abstract class UIManager implements LifecycleOwner {
                     minecraft.getWindow().getWidth() / minecraft.getWindow().getScreenWidth());
             float y = (float) (minecraft.mouseHandler.ypos() *
                     minecraft.getWindow().getHeight() / minecraft.getWindow().getScreenHeight());
-            int buttonState = SdlInput.toModernButtonState(SDLMouse.nSDL_GetMouseState(0, 0));
-            mButtonState = buttonState;
             int hoverAction = action == PRESS ?
                     MotionEvent.ACTION_BUTTON_PRESS : MotionEvent.ACTION_BUTTON_RELEASE;
             int touchAction = action == PRESS ?
                     MotionEvent.ACTION_DOWN : MotionEvent.ACTION_UP;
-            int actionButton = SdlInput.toModernButton(button);
             mods = SdlInput.toModernModifiers(mods);
             MotionEvent ev = MotionEvent.obtain(now, hoverAction, actionButton,
                     x, y, mods, buttonState, 0);

@@ -37,6 +37,11 @@ Sources were decompiled from the hash-verified official JAR with Vineflower
 - Window/input use SDL. Minecraft's `KeyEvent.key()` is a physical scancode;
   `keycode()` is the layout-mapped SDL keycode. Modifier bits and mouse button
   numbers differ from ModernUI Core 3.13's representation.
+- Mouse button state follows individual press/release events. SDL's
+  [cached mouse state](https://wiki.libsdl.org/SDL3/SDL_GetMouseState) reflects
+  the last entire event pump, so polling it inside a queued press callback can
+  already report its release. Zero-delay press/release input reproduced dropped
+  clicks in the old integration.
 - Text input now has an owner. Fullscreen changes use Options and Window's
   `updateFullscreenIfChanged`. Cursor changes use Minecraft's CursorTypes.
 - ModernUI Core 3.13 still uses GLFW for initialization, clocks, clipboard,
@@ -134,6 +139,11 @@ hash-verified official client plus Fabric Loader alone, without ModernUI,
 Fabric API or Mod Menu. The control identifies a limitation of this Minecraft/
 driver/validation-layer combination; it does not establish the upstream cause.
 Basic Vulkan validation is a separate, successful test.
+
+One final Fabric Vulkan automated run remained on the home page after its
+clicks, so that run was rejected as page-operation evidence despite exit 0.
+A zero-delay click reproduced the missing press; the event-based mouse state
+fix and its final-package regression are recorded in the delivery logs.
 
 One development screenshot briefly lacked the ModernUI layer during an early
 clipboard sequence. The UI thread remained responsive; subsequent stepwise
