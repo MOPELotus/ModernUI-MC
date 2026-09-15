@@ -26,7 +26,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -45,7 +44,7 @@ public class MixinLevelRendererDBG {
                                Camera camera, GameRenderer gameRenderer, LightTexture lightTexture,
                                Matrix4f modelView, Matrix4f projection, CallbackInfo ci) {
         if (Screen.hasAltDown() &&
-                InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_KP_7)) {
+                InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), InputConstants.KEY_NUMPAD7)) {
             LOGGER.info("Capture from MixinLevelRendererDBG.afterEntities()");
             LOGGER.info("Param ModelViewMatrix: {}", modelView);
             LOGGER.info("Param Camera.getPosition(): {}, pitch: {}, yaw: {}, rot: {}, detached: {}",

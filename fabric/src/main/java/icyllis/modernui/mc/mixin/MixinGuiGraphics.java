@@ -63,7 +63,8 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
     @Shadow
     protected abstract void setTooltipForNextFrameInternal(Font arg, List<ClientTooltipComponent> list, int m, int n,
                                                            ClientTooltipPositioner arg2,
-                                                           @Nullable Identifier arg3, boolean bl);
+                                                           @Nullable Identifier arg3, boolean replaceExisting,
+                                                           boolean extraSpaceAfterFirstLine);
 
     @Inject(method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V",
             at = @At("HEAD"))
@@ -78,17 +79,18 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
     }
 
     @Inject(method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;" +
-            "IILnet/minecraft/resources/Identifier;)V",
+            "IILnet/minecraft/resources/Identifier;Z)V",
             at = @At("HEAD"), cancellable = true)
     private void onRenderTooltip(Font font, List<Component> components, Optional<TooltipComponent> tooltipComponent,
-                                 int x, int y, @Nullable Identifier tooltipStyle, CallbackInfo ci) {
+                                 int x, int y, @Nullable Identifier tooltipStyle,
+                                 boolean extraSpaceAfterFirstLine, CallbackInfo ci) {
         if (TooltipRenderer.sTooltip && TooltipRenderer.sLineWrapping_FabricOnly) {
             if (!components.isEmpty()) {
                 var transformedComponents = modernUI_MC$transformComponents(
                         font, components, tooltipComponent, x
                 );
                 setTooltipForNextFrameInternal(font, transformedComponents,
-                        x, y, DefaultTooltipPositioner.INSTANCE, tooltipStyle, false);
+                        x, y, DefaultTooltipPositioner.INSTANCE, tooltipStyle, false, extraSpaceAfterFirstLine);
                 ci.cancel();
             }
         }
@@ -137,22 +139,25 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
         return result;
     }
 
-    @Inject(method = "setTooltipForNextFrameInternal",
+    @Inject(method = "setTooltipForNextFrameInternal(Lnet/minecraft/client/gui/Font;Ljava/util/List;" +
+            "IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;" +
+            "Lnet/minecraft/resources/Identifier;ZZ)V",
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;" +
                     "deferredTooltip:Ljava/lang/Runnable;",
                     opcode = Opcodes.PUTFIELD))
     private void onRenderTooltipInternal(Font arg, List<ClientTooltipComponent> list, int m, int n,
                                          ClientTooltipPositioner arg2,
-                                         @Nullable Identifier arg3, boolean bl, CallbackInfo ci) {
+                                         @Nullable Identifier arg3, boolean replaceExisting,
+                                         boolean extraSpaceAfterFirstLine, CallbackInfo ci) {
         modernUI_MC$deferredTooltipStack = modernUI_MC$tooltipStack;
     }
 
     @Inject(method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;" +
             "IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;" +
-            "Lnet/minecraft/resources/Identifier;)V", at = @At("HEAD"), cancellable = true)
+            "Lnet/minecraft/resources/Identifier;Z)V", at = @At("HEAD"), cancellable = true)
     private void onRenderTooltip(Font font, List<ClientTooltipComponent> components,
                                  int x, int y, ClientTooltipPositioner positioner,
-                                 @Nullable Identifier tooltipStyle,
+                                 @Nullable Identifier tooltipStyle, boolean extraSpaceAfterFirstLine,
                                  CallbackInfo ci) {
         ItemStack capturedTooltipStack = modernUI_MC$deferredTooltipStack;
         modernUI_MC$deferredTooltipStack = ItemStack.EMPTY;
@@ -161,7 +166,7 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
                 UIManager.getInstance().drawExtTooltip(capturedTooltipStack,
                         (GuiGraphicsExtractor) (Object) this,
                         components, x, y, font,
-                        guiWidth(), guiHeight(), positioner, tooltipStyle);
+                        guiWidth(), guiHeight(), positioner, tooltipStyle, extraSpaceAfterFirstLine);
                 ci.cancel();
             }
         }

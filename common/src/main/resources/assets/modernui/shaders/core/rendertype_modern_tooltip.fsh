@@ -1,4 +1,5 @@
-#version 150
+#version 330
+#extension GL_ARB_separate_shader_objects : require
 // This file is part of Modern UI.
 // Copyright (C) 2024 BloCamLimb.
 // Licensed under LGPL-3.0-or-later.
@@ -21,9 +22,9 @@ layout(std140) uniform ModernTooltip {
 #define u_BackgroundAlpha u_PushData1.z
 #define u_RainbowOffset u_PushData5.w
 
-in vec2 f_Position;
+layout(location = 0) in vec2 f_Position;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 float noise1(float seed1, float seed2) {
     return(

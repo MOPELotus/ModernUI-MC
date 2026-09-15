@@ -32,7 +32,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.joml.Matrix3x2f;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.AL10;
 
 import javax.annotation.Nonnull;
@@ -201,7 +200,7 @@ public enum BlurHandler {
         if (minecraft.isWindowActive()) {
             targetVolumeMultiplier = 1;
         } else if (sMasterVolumeMinimized < sMasterVolumeInactive &&
-                GLFW.glfwGetWindowAttrib(minecraft.getWindow().handle(), GLFW.GLFW_ICONIFIED) != 0) {
+                minecraft.getWindow().isIconified()) {
             targetVolumeMultiplier = sMasterVolumeMinimized;
         } else {
             targetVolumeMultiplier = sMasterVolumeInactive;

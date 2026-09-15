@@ -18,7 +18,7 @@
 
 package icyllis.modernui.mc.mixin;
 
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icyllis.arc3d.engine.ContextOptions;
 import icyllis.modernui.core.Core;

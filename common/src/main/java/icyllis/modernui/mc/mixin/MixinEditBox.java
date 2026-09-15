@@ -26,7 +26,7 @@ import icyllis.modernui.text.method.WordIterator;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Util;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -208,12 +208,12 @@ public abstract class MixinEditBox implements IModernEditBox {
             ),
             cancellable = true)
     public void onKeyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
-        int i = event.key();
-        if (i == GLFW.GLFW_KEY_Z || i == GLFW.GLFW_KEY_Y) {
+        int i = event.keycode();
+        if (i == InputConstants.KEYCODE_Z || i == InputConstants.KEYCODE_Y) {
             if (event.hasControlDownWithQuirk() && !event.hasAltDown()) {
                 if (!event.hasShiftDown()) {
                     UndoOwner[] owners = {modernUI_MC$undoOwner()};
-                    if (i == GLFW.GLFW_KEY_Z) {
+                    if (i == InputConstants.KEYCODE_Z) {
                         // CTRL+Z
                         if (modernUI_MC$undoManager.countUndos(owners) > 0) {
                             modernUI_MC$undoManager.undo(owners, 1);
@@ -223,7 +223,7 @@ public abstract class MixinEditBox implements IModernEditBox {
                         // CTRL+Y
                         cir.setReturnValue(true);
                     }
-                } else if (i == GLFW.GLFW_KEY_Z) {
+                } else if (i == InputConstants.KEYCODE_Z) {
                     UndoOwner[] owners = {modernUI_MC$undoOwner()};
                     if (modernUI_MC$tryRedo(owners)) {
                         // CTRL+SHIFT+Z

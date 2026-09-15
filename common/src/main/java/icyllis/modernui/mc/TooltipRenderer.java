@@ -18,7 +18,7 @@
 
 package icyllis.modernui.mc;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icyllis.arc3d.core.MathUtil;
 import icyllis.modernui.graphics.Color;
@@ -530,6 +530,15 @@ public final class TooltipRenderer implements ScrollController.IListener {
                             @Nonnull Font font, int screenWidth, int screenHeight,
                             float partialX, float partialY, @Nullable ClientTooltipPositioner positioner,
                             @Nullable Identifier tooltipStyle) {
+        drawTooltip(itemStack, gr, list, mouseX, mouseY, font, screenWidth, screenHeight,
+                partialX, partialY, positioner, tooltipStyle, false);
+    }
+
+    public void drawTooltip(@Nonnull ItemStack itemStack, @Nonnull GuiGraphicsExtractor gr,
+                            @Nonnull List<ClientTooltipComponent> list, int mouseX, int mouseY,
+                            @Nonnull Font font, int screenWidth, int screenHeight,
+                            float partialX, float partialY, @Nullable ClientTooltipPositioner positioner,
+                            @Nullable Identifier tooltipStyle, boolean extraSpaceAfterFirstLine) {
         mDraw = true;
 
         if (itemStack != mLastSeenItem || mNumDrawsInThisFrame > 0) {
@@ -539,7 +548,7 @@ public final class TooltipRenderer implements ScrollController.IListener {
 
         int tooltipWidth;
         int tooltipHeight;
-        boolean titleGap = false;
+        boolean titleGap = extraSpaceAfterFirstLine && list.size() > 1;
         int titleBreakHeight = 0;
         if (list.size() == 1) {
             ClientTooltipComponent component = list.get(0);

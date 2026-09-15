@@ -77,7 +77,7 @@ public class ModernUIFabricClient extends ModernUIClient implements ClientModIni
                 ModernUIMod.location("keybind"));
         UIManagerFabric.OPEN_CENTER_KEY = new KeyMapping(
                 "key.modernui.openCenter",
-                InputConstants.Type.KEYSYM, InputConstants.KEY_K, UIManagerFabric.KEYBIND_CATEGORY);
+                InputConstants.Type.KEYBOARD, InputConstants.KEY_K, UIManagerFabric.KEYBIND_CATEGORY);
         KeyMappingHelper.registerKeyMapping(UIManagerFabric.OPEN_CENTER_KEY);
 
         Image.setLegacyFactory(ImageStore.getInstance());

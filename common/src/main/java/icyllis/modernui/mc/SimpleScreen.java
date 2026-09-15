@@ -165,7 +165,7 @@ public class SimpleScreen extends Screen implements MuiScreen {
         if (getFocused() != null && getFocused().keyPressed(event)) {
             return true;
         }
-        mHost.onKeyPress(event.key(), event.scancode(), event.modifiers());
+        mHost.onKeyPress(event.key(), event.keycode(), event.modifiers());
         return false;
     }
 
@@ -174,7 +174,7 @@ public class SimpleScreen extends Screen implements MuiScreen {
         if (getFocused() != null && getFocused().keyReleased(event)) {
             return true;
         }
-        mHost.onKeyRelease(event.key(), event.scancode(), event.modifiers());
+        mHost.onKeyRelease(event.key(), event.keycode(), event.modifiers());
         return false;
     }
 

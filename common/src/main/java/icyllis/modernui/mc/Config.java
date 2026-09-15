@@ -18,8 +18,6 @@
 
 package icyllis.modernui.mc;
 
-import com.mojang.blaze3d.platform.Monitor;
-import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
 import icyllis.modernui.ModernUI;
 import icyllis.modernui.R;
@@ -45,8 +43,7 @@ import icyllis.modernui.view.ViewConfiguration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import org.jetbrains.annotations.ApiStatus;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.sdl.SDLVideo;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -468,63 +465,38 @@ public final class Config {
                 Window window = Minecraft.getInstance().getWindow();
                 switch (this) {
                     case FULLSCREEN -> {
-                        if (!window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
+                        Minecraft.getInstance().options.exclusiveFullscreen().set(true);
+                        Minecraft.getInstance().options.fullscreen().set(true);
                     }
                     case FULLSCREEN_BORDERLESS -> {
-                        if (window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
-                        GLFW.glfwRestoreWindow(window.handle());
-                        GLFW.glfwSetWindowAttrib(window.handle(),
-                                GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
-                        Monitor monitor = window.findBestMonitor();
-                        if (monitor != null) {
-                            VideoMode videoMode = monitor.currentMode();
-                            int x = monitor.x();
-                            int y = monitor.y();
-                            int width = videoMode.getWidth();
-                            int height = videoMode.getHeight();
-                            GLFW.glfwSetWindowMonitor(window.handle(), MemoryUtil.NULL,
-                                    x, y, width, height, GLFW.GLFW_DONT_CARE);
-                        } else {
-                            GLFW.glfwMaximizeWindow(window.handle());
-                        }
+                        Minecraft.getInstance().options.exclusiveFullscreen().set(false);
+                        Minecraft.getInstance().options.fullscreen().set(true);
                     }
                     case MAXIMIZED -> {
-                        if (window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
-                        GLFW.glfwRestoreWindow(window.handle());
-                        GLFW.glfwSetWindowAttrib(window.handle(),
-                                GLFW.GLFW_DECORATED, GLFW.GLFW_TRUE);
-                        GLFW.glfwMaximizeWindow(window.handle());
+                        Minecraft.getInstance().options.fullscreen().set(false);
+                        window.updateFullscreenIfChanged();
+                        SDLVideo.SDL_RestoreWindow(window.handle());
+                        SDLVideo.SDL_SetWindowBordered(window.handle(), true);
+                        SDLVideo.SDL_MaximizeWindow(window.handle());
                     }
                     case MAXIMIZED_BORDERLESS -> {
-                        if (window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
-                        GLFW.glfwRestoreWindow(window.handle());
-                        GLFW.glfwSetWindowAttrib(window.handle(),
-                                GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
-                        GLFW.glfwMaximizeWindow(window.handle());
+                        Minecraft.getInstance().options.fullscreen().set(false);
+                        window.updateFullscreenIfChanged();
+                        SDLVideo.SDL_RestoreWindow(window.handle());
+                        SDLVideo.SDL_SetWindowBordered(window.handle(), false);
+                        SDLVideo.SDL_MaximizeWindow(window.handle());
                     }
                     case WINDOWED -> {
-                        if (window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
-                        GLFW.glfwSetWindowAttrib(window.handle(),
-                                GLFW.GLFW_DECORATED, GLFW.GLFW_TRUE);
-                        GLFW.glfwRestoreWindow(window.handle());
+                        Minecraft.getInstance().options.fullscreen().set(false);
+                        window.updateFullscreenIfChanged();
+                        SDLVideo.SDL_SetWindowBordered(window.handle(), true);
+                        SDLVideo.SDL_RestoreWindow(window.handle());
                     }
                     case WINDOWED_BORDERLESS -> {
-                        if (window.isFullscreen()) {
-                            window.toggleFullScreen();
-                        }
-                        GLFW.glfwSetWindowAttrib(window.handle(),
-                                GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
-                        GLFW.glfwRestoreWindow(window.handle());
+                        Minecraft.getInstance().options.fullscreen().set(false);
+                        window.updateFullscreenIfChanged();
+                        SDLVideo.SDL_SetWindowBordered(window.handle(), false);
+                        SDLVideo.SDL_RestoreWindow(window.handle());
                     }
                 }
             }

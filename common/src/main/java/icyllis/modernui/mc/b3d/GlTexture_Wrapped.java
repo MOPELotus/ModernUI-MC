@@ -18,11 +18,11 @@
 
 package icyllis.modernui.mc.b3d;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.opengl.FrameBufferCache;
-import com.mojang.blaze3d.opengl.GlConst;
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.backend.opengl.FrameBufferCache;
+import com.mojang.renderpearl.backend.opengl.GlConst;
+import com.mojang.renderpearl.backend.opengl.GlTexture;
+import com.mojang.renderpearl.frontend.FrontendGpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icyllis.arc3d.core.SharedPtr;
 import icyllis.arc3d.engine.Engine;
@@ -38,7 +38,7 @@ public class GlTexture_Wrapped extends GlTexture {
 
     static {
         try {
-            BACKEND_FIELD = GpuDevice.class.getDeclaredField("backend");
+            BACKEND_FIELD = FrontendGpuDevice.class.getDeclaredField("backend");
             BACKEND_FIELD.setAccessible(true);
         } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);

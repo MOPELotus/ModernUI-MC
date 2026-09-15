@@ -52,7 +52,7 @@ public final class MiSansSetup extends Fragment {
         layout.addView(status);
         Button license = new Button(ctx);
         license.setText("查看 MiSans 许可协议");
-        license.setOnClickListener(v -> net.minecraft.util.Util.getPlatform().openUri(MiSansInstaller.LICENSE_PAGE));
+        license.setOnClickListener(v -> com.mojang.blaze3d.Blaze3D.openUri(java.net.URI.create(MiSansInstaller.LICENSE_PAGE)));
         layout.addView(license);
         Button download = new Button(ctx);
         download.setText("下载");

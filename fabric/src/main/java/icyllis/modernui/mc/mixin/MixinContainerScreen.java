@@ -35,7 +35,7 @@ public class MixinContainerScreen {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;setTooltipForNextFrame" +
                             "(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;" +
-                            "IILnet/minecraft/resources/Identifier;)V"),
+                            "IILnet/minecraft/resources/Identifier;Z)V"),
             locals = LocalCapture.CAPTURE_FAILSOFT)
     private void preRenderTooltip(GuiGraphicsExtractor gr, int x, int y, CallbackInfo ci, ItemStack stack) {
         ((IModernGuiGraphics) gr).modernUI_MC$setTooltipStack(stack);
@@ -46,7 +46,7 @@ public class MixinContainerScreen {
                     shift = At.Shift.AFTER,
                     target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;setTooltipForNextFrame" +
                             "(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;" +
-                            "IILnet/minecraft/resources/Identifier;)V"),
+                            "IILnet/minecraft/resources/Identifier;Z)V"),
             locals = LocalCapture.CAPTURE_FAILSOFT)
     private void postRenderTooltip(GuiGraphicsExtractor gr, int x, int y, CallbackInfo ci, ItemStack stack) {
         ((IModernGuiGraphics) gr).modernUI_MC$setTooltipStack(ItemStack.EMPTY);

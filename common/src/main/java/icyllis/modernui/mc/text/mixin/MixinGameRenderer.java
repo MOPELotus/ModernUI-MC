@@ -19,7 +19,6 @@
 package icyllis.modernui.mc.text.mixin;
 
 import icyllis.modernui.mc.text.TextLayoutEngine;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,12 +37,12 @@ public class MixinGameRenderer {
     }*/
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    private void renderLevelStart(DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void renderLevelStart(CallbackInfo ci) {
         TextLayoutEngine.sCurrentInWorldRendering = true;
     }
 
     @Inject(method = "renderLevel", at = @At("TAIL"))
-    private void renderLevelEnd(DeltaTracker deltaTracker, CallbackInfo ci) {
+    private void renderLevelEnd(CallbackInfo ci) {
         TextLayoutEngine.sCurrentInWorldRendering = false;
     }
 }

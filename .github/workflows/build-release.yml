@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   build:
-    name: Build all loaders
+    name: Build configured loaders
     runs-on: ubuntu-latest
 
     steps:
@@ -47,16 +47,17 @@ jobs:
       - name: Build jars
         run: |
           chmod +x ./gradlew
-          ./gradlew --no-daemon :ModernUI-Fabric:build :ModernUI-Forge:build :ModernUI-NeoForge:build
+          ./gradlew --no-daemon build
 
       - name: Collect release jars
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p release
-          cp fabric/build/libs/*-universal.jar release/
-          cp forge/build/libs/*-universal.jar release/
-          cp neoforge/build/libs/*-universal.jar release/
+          shopt -s nullglob
+          jars=(fabric/build/libs/*-universal.jar forge/build/libs/*-universal.jar neoforge/build/libs/*-universal.jar)
+          (( ${#jars[@]} > 0 ))
+          cp -- "${jars[@]}" release/
           ls -lh release
 
       - name: Upload build artifacts

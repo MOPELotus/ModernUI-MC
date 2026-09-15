@@ -36,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 
 import static icyllis.modernui.mc.ModernUIMod.LOGGER;
-import static org.lwjgl.glfw.GLFW.*;
+import static com.mojang.blaze3d.platform.InputConstants.PRESS;
 
 @ApiStatus.Internal
 public final class UIManagerFabric extends UIManager {
@@ -93,7 +93,7 @@ public final class UIManagerFabric extends UIManager {
 
     @Override
     protected void onPreKeyInput(int action, KeyEvent event) {
-        if (action == GLFW_PRESS) {
+        if (action == PRESS) {
             Screen screen = minecraft.gui.screen();
             if (screen == null ||
                     screen.shouldCloseOnEsc() ||

@@ -18,16 +18,16 @@
 
 package icyllis.modernui.mc.text;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.MuiModApi;
@@ -65,8 +65,8 @@ public abstract class TextRenderType {
                     .withUniform("Fog", UniformType.UNIFORM_BUFFER)
                     .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
                     .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                    .withSampler("Sampler0")
-                    .withSampler("Sampler2")
+                    .withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER)
+                    .withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER)
                     .build())
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
@@ -89,8 +89,8 @@ public abstract class TextRenderType {
                     .withUniform("Fog", UniformType.UNIFORM_BUFFER)
                     .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
                     .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                    .withSampler("Sampler0")
-                    .withSampler("Sampler2")
+                    .withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER)
+                    .withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER)
                     .build())
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)

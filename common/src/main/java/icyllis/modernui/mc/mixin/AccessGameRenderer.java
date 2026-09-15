@@ -26,6 +26,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(GameRenderer.class)
 public interface AccessGameRenderer {
 
-    @Invoker("setPostEffect")
+    @Invoker("setSpectatedEntityPostEffect")
     void invokeSetPostEffect(Identifier location);
 }

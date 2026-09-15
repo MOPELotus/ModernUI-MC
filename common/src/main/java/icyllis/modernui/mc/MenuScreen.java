@@ -173,7 +173,7 @@ public class MenuScreen<T extends @NonNull AbstractContainerMenu>
             }
         }
 
-        mHost.onKeyPress(event.key(), event.scancode(), event.modifiers());
+        mHost.onKeyPress(event.key(), event.keycode(), event.modifiers());
         return false;
     }
 
@@ -182,7 +182,7 @@ public class MenuScreen<T extends @NonNull AbstractContainerMenu>
         if (getFocused() != null && getFocused().keyReleased(event)) {
             return true;
         }
-        mHost.onKeyRelease(event.key(), event.scancode(), event.modifiers());
+        mHost.onKeyRelease(event.key(), event.keycode(), event.modifiers());
         return false;
     }
 

@@ -19,8 +19,8 @@
 package icyllis.modernui.mc;
 
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import icyllis.modernui.ModernUI;
 import icyllis.modernui.annotation.MainThread;
 import icyllis.modernui.annotation.RenderThread;
@@ -131,7 +131,7 @@ public abstract class MuiModApi {
     public interface OnPreKeyInputListener {
 
         /**
-         * Called when {@link org.lwjgl.glfw.GLFWKeyCallbackI} invoked.
+         * Called before Minecraft handles a keyboard event.
          */
         void onPreKeyInput(long window, int action, KeyEvent event);
     }
@@ -488,7 +488,7 @@ public abstract class MuiModApi {
     public abstract RenderType createRenderType(String name, RenderSetup allState);
 
     /*
-     * Registers a callback to be called when {@link org.lwjgl.glfw.GLFWScrollCallback} is called.
+     * Registers a callback for Minecraft mouse wheel events.
      *
      * @param listener the listener to register
      * @see OnScrollListener

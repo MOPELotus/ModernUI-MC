@@ -42,10 +42,10 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
 
-    implementation "net.fabricmc:fabric-loader:0.19.3"
-    api "net.fabricmc.fabric-api:fabric-api:0.153.0+26.2"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    api "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-    implementation "com.terraformersmc:modmenu:18.0.0-beta.1"
+    implementation "com.terraformersmc:modmenu:21.0.0-beta.1"
 
     implementation project(':common')
 
@@ -75,8 +75,22 @@ dependencies {
         transitive = false
     }
 
-    compileOnly("org.lwjgl:lwjgl-vulkan:3.4.1")
-    testCompileOnly("org.lwjgl:lwjgl-vulkan:3.4.1")
+    compileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
+    testCompileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
+
+    // Core 3.13's desktop class signatures reference GLFW callback types.
+    // Keep the Java API loadable; Minecraft's SDL lifecycle is bridged by mixins.
+    runtimeOnly("org.lwjgl:lwjgl-glfw:${lwjgl_version}")
+    include("org.lwjgl:lwjgl-glfw:${lwjgl_version}")
+
+    // Minecraft 26.3 no longer ships TinyFD; ModernUI still uses its file dialogs.
+    implementation("org.lwjgl:lwjgl-tinyfd:${lwjgl_version}")
+    include("org.lwjgl:lwjgl-tinyfd:${lwjgl_version}")
+    ['natives-linux', 'natives-macos', 'natives-macos-arm64',
+     'natives-windows', 'natives-windows-arm64'].each { classifier ->
+        runtimeOnly("org.lwjgl:lwjgl-tinyfd:${lwjgl_version}:${classifier}")
+        include("org.lwjgl:lwjgl-tinyfd:${lwjgl_version}:${classifier}")
+    }
 
     //implementation("com.vladsch.flexmark:flexmark:${flexmark_version}")
 
