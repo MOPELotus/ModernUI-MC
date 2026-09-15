@@ -38,13 +38,14 @@ public abstract class MixinGuiGraphics {
 
     @Inject(method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;" +
             "IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;" +
-            "Lnet/minecraft/resources/Identifier;Lnet/minecraft/world/item/ItemStack;)V", at = @At("HEAD"))
+            "Lnet/minecraft/resources/Identifier;ZLnet/minecraft/world/item/ItemStack;)V", at = @At("HEAD"))
     private void onRenderTooltip(Font font, List<ClientTooltipComponent> components,
                                  int x, int y, ClientTooltipPositioner positioner,
                                  @Nullable Identifier tooltipStyle,
-                                 ItemStack tooltipStack,
+                                 boolean extraSpaceAfterFirstLine, ItemStack tooltipStack,
                                  CallbackInfo ci) {
         // capture the tooltipStyle
         UIManagerForge.sTooltipStyle = tooltipStyle;
+        UIManagerForge.sTooltipExtraSpaceAfterFirstLine = extraSpaceAfterFirstLine;
     }
 }

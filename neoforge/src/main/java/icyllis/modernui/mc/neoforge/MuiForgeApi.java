@@ -47,7 +47,7 @@ public final class MuiForgeApi extends MuiModApi {
 
     @Override
     public void loadEffect(GameRenderer gr, Identifier effect) {
-        gr.setPostEffect(effect);
+        gr.setSpectatedEntityPostEffect(effect);
     }
 
     /*@Override

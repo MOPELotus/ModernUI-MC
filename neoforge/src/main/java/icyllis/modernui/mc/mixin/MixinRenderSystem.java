@@ -84,6 +84,7 @@ public class MixinRenderSystem {
                 if (!Core.initVulkan(context, options)) {
                     throw new IllegalStateException("Failed to create Vulkan device");
                 }
+                NativeVulkanIntegration.configureShaderCaps();
             }
         }
         UIManagerForge.initialize();

@@ -48,7 +48,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import static icyllis.modernui.mc.ModernUIMod.LOGGER;
-import static org.lwjgl.glfw.GLFW.*;
+import static com.mojang.blaze3d.platform.InputConstants.*;
 
 /**
  * Manage UI thread and connect Minecraft to Modern UI view system at most bottom level.
@@ -77,6 +77,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
 
     // captured tooltip style from MixinGuiGraphics
     public static Identifier sTooltipStyle;
+    public static boolean sTooltipExtraSpaceAfterFirstLine;
 
     private UIManagerForge() {
         super();
@@ -125,7 +126,6 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
     }
 
     /**
-     * @see org.lwjgl.glfw.GLFWMouseButtonCallbackI
      * @see net.minecraft.client.MouseHandler
      * @see net.neoforged.neoforge.client.event.InputEvent
      */
@@ -136,7 +136,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
 
     @Override
     protected void onPreKeyInput(int action, KeyEvent event) {
-        if (action == GLFW_PRESS) {
+        if (action == PRESS) {
             Screen screen = minecraft.gui.screen();
             if (screen == null ||
                     screen.shouldCloseOnEsc() ||
@@ -272,7 +272,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                     event.getComponents(),
                     event.getX(), event.getY(), event.getFont(),
                     event.getScreenWidth(), event.getScreenHeight(),
-                    event.getTooltipPositioner(), sTooltipStyle);
+                    event.getTooltipPositioner(), sTooltipStyle, sTooltipExtraSpaceAfterFirstLine);
             sTooltipStyle = null;
 
             // our tooltip is translucent, need transparency sorting
@@ -549,7 +549,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
         event.button = mouseButton;
         //List<ViewRootImpl> windows = this.windows;
         boolean handled = false;
-        if (mouseButton == GLFW_MOUSE_BUTTON_LEFT && lastLmTick >= 0 && ticks - lastLmTick < 6) {
+        if (mouseButton == MOUSE_BUTTON_LEFT && lastLmTick >= 0 && ticks - lastLmTick < 6) {
             //event.action = MotionEvent.ACTION_DOUBLE_CLICK;
             *//*for (int i = windows.size() - 1; i >= 0; i--) {
                 if (windows.get(i).onMouseEvent(event)) {
@@ -625,7 +625,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
         //event.action = MotionEvent.ACTION_RELEASE;
         event.button = mouseButton;
         boolean dCheck = false;
-        if (mouseButton == GLFW_MOUSE_BUTTON_LEFT && lastLmTick < 0) {
+        if (mouseButton == MOUSE_BUTTON_LEFT && lastLmTick < 0) {
             dCheck = event.pressMap.get(mouseButton) != null;
         } else {
             lastLmTick = Integer.MIN_VALUE;

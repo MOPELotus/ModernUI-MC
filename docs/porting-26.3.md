@@ -1,9 +1,8 @@
-# Minecraft 26.3 adaptation (in progress)
+# Minecraft 26.3 adaptation
 
 The target is the **26.3 release**, with ModernUI pages verified in actual
 Minecraft clients using both OpenGL and native Vulkan. Compilation alone does
-not satisfy this gate. Fabric and NeoForge remain in scope; NeoForge cannot be
-validated before a matching loader is published.
+not satisfy this gate. Both Fabric and NeoForge are included.
 
 ## Verified inputs (2026-09-15 to 2026-09-16, Asia/Shanghai)
 
@@ -19,9 +18,12 @@ validated before a matching loader is published.
   <https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/maven-metadata.xml>
 - Mod Menu `21.0.0-beta.1` declares Minecraft `>=26.3-` in its actual JAR.
   <https://maven.terraformersmc.com/releases/com/terraformersmc/modmenu/maven-metadata.xml>
-- No `26.3.*` NeoForge version at the initial check:
+- NeoForge `26.3.0.1-beta` became available after the initial Fabric checkpoint.
+  The 2026-09-16 07:00 CST monitor and a fresh metadata check confirm it:
   <https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml>.
-  This is time-dependent; consult the hourly monitor before changing dependencies.
+  Official installer, userdev and source JARs were downloaded. Userdev SHA-256:
+  `5221335091bc52998c4fb11cc8307cf15f806855b6df49bc655504e38dd532d3`.
+  NeoForm applied the actual 26.3 patches; FML is 12.0.0.
 
 ## Changes confirmed from the release bytecode
 
@@ -41,8 +43,10 @@ Sources were decompiled from the hash-verified official JAR with Vineflower
   mapped characters and standard cursor creation. Minecraft-specific mixins
   bridge these to SDL. The GLFW Java API is bundled for Core's class signatures;
   GLFW natives are not required by this integration.
-- Minecraft no longer provides TinyFD. ModernUI's native file dialogs retain
-  their dependency, which must be bundled with the platform native libraries.
+- Vanilla Minecraft no longer provides TinyFD. ModernUI retains its native
+  dialog dependency and bundles LWJGL 3.4.3 TinyFD and platform libraries.
+  NeoForge also ships TinyFD; the tested launcher uses its normal dependency
+  resolution. Opening native dialogs remains outside the tested scope.
 - GUI extraction moved to `Gui.extractRenderState`; ModernUI's overlay hook
   remains before toast extraction. Render and command submission hooks follow
   the new `GameRenderer.render()` and `CommandEncoder.submit()` calls.
@@ -59,16 +63,16 @@ Sources were decompiled from the hash-verified official JAR with Vineflower
   shutdown. Arc3D resources and its allocator are released after Minecraft's
   Vulkan command encoder has drained deferred references, before VkDevice dies.
 
-## Current build and test status
+## Build and runtime validation
 
 - Branch: `port/minecraft-26.3`; starting commit `0295ab8a`.
-- Default configured platform: Fabric. NeoForge version selection is guarded
-  against accidentally using a 26.2 loader with 26.3.
-- Common and Fabric sources compile against 26.3. The full configured
+- Default configured platforms: Fabric and NeoForge; Minecraft 26.3 and
+  NeoForge 26.3.0.1-beta are pinned in `gradle.properties`.
+- Common, Fabric and NeoForge sources compile against 26.3. The full configured
   `build` passed on 2026-09-16, including `:common:checkSdlInput`.
 - `SdlInputCheck` passed when compiled against the actual 26.3 and Core 3.13
   JARs. It is also wired into Gradle `check` as `:common:checkSdlInput`.
-- A bytecode audit found no missing selectors across 43 enabled mixin targets,
+- Bytecode audits found no missing selectors across 43 Fabric and 42 NeoForge mixin targets,
   including required invocation/field injection points. Runtime tests below
   also exercised actual mixin application.
 - Development clients: OpenGL and native Vulkan rendered the ModernUI Center
@@ -80,14 +84,39 @@ Sources were decompiled from the hash-verified official JAR with Vineflower
   Home, preferences and font pages, typing, copy/paste, resize/reopen and
   shutdown passed on both backends. Vulkan ran with basic validation enabled;
   no Vulkan validation, shader, missing-native or UI-thread errors were found.
-- NeoForge compilation and both runtime backends: **pending loader release**.
-- This is a Fabric adaptation checkpoint. The overall Fabric/NeoForge goal
-  remains unfinished while the matching NeoForge loader is unavailable.
+- Packaged NeoForge JAR: the official installer successfully created an isolated
+  installation, with only the ModernUI universal JAR in `mods`. Home, preferences,
+  font pages, typing, clipboard, resize/reopen and active-page shutdown passed
+  on both OpenGL and native Vulkan. Both processes exited 0; basic Vulkan
+  validation reported no errors.
+- NeoForge development startup also initializes Core and the UI thread. Its
+  shaded Core/Arc3D dependencies are grouped into Loom's `main` mod so FML
+  transforms Core's SDL bridge mixins in development as well as production.
+- Closing the first-run font prompt originally reopened its destroyed fragment
+  during Minecraft's final disconnect frame, leaving an acquired surface.
+  This was reproduced twice in the old NeoForge package. `MiSansSetup.tick`
+  now skips opening the prompt after `Minecraft.isRunning()` becomes false.
+  First-run prompt exit regression passed on Fabric and NeoForge, under both
+  OpenGL and Vulkan (all four exited 0; no font download or license acceptance
+  was performed). Results are recorded in the delivery README/logs.
+
+## NeoForge API changes
+
+The implementation follows the official 26.3.0.1-beta and FML 12 source JARs:
+
+- Key bindings use `InputConstants.Type.KEYBOARD`, and input dispatch uses SDL
+  constants. The tooltip hook accepts the new first-line spacing boolean before
+  `ItemStack`; the NeoForge event does not expose this flag itself.
+- The post-processing entry point is `setSpectatedEntityPostEffect`.
+- NeoForge 26.3.0.1's `ScrollPanel.mouseClicked` still compares button 0; the
+  scoped redirect adapts its left-button comparison to SDL's button 1.
+- The existing wide logo uses `bannerFile`, replacing deprecated `logoFile`.
 
 ## Runtime coverage and limits
 
 Tests use the official 26.3 client, Fabric Loader 0.19.5, Fabric API
-0.160.5+26.3, Mod Menu 21.0.0-beta.1 and Java 25 on Linux x86-64. The display is
+0.160.5+26.3, Mod Menu 21.0.0-beta.1, or NeoForge 26.3.0.1-beta, with Java 25
+on Linux x86-64. The display is
 Xvfb; Mesa 25.2.8 llvmpipe provides OpenGL 4.5 through EGL and native Vulkan
 1.4.318. Minecraft requests Vulkan 1.2. This exercises real game backends using
 CPU drivers, not discrete GPU hardware or Windows/macOS drivers.
@@ -130,6 +159,7 @@ under `build/loader-monitor/`; check `systemctl --user` for live status.
 Network/parse failures must be recorded as unknown and retried, never as proof
 that a loader is unpublished.
 
-The goal must remain unfinished until the adaptation and both graphics backend
-tests pass. If code is ready but a loader is still missing, preserve monitoring
-and record the external blocker instead of reporting completion.
+The hourly timer is preserved. The Luna agent performs bounded verification
+when invoked; it is not a continuously executing model between timer runs.
+The timer performs the unattended HTTP probes. Loader publication was the
+previous blocker and is now resolved.

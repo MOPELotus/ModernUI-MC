@@ -23,7 +23,9 @@ public final class MiSansSetup extends Fragment {
         checked = true;
     }
     public static void tick(Minecraft mc) {
-        if (!required || mc.gui.overlay() != null) return;
+        // Disconnect renders a final progress frame after the UI has shut down.
+        // Do not replace that screen with a fragment that has already finished.
+        if (!required || !mc.isRunning() || mc.gui.overlay() != null) return;
         if (screen == null) {
             screen = new SimpleScreen(new MiSansSetup(), null, null, Component.literal("安装 MiSans")) {
                 @Override public void onClose() {}

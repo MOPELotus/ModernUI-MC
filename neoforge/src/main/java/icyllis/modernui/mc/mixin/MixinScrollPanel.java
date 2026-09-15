@@ -20,6 +20,7 @@ package icyllis.modernui.mc.mixin;
 
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.mc.ScrollController;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -27,6 +28,7 @@ import net.neoforged.neoforge.client.gui.widget.ScrollPanel;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nonnull;
@@ -62,6 +64,14 @@ public abstract class MixinScrollPanel implements ScrollController.IListener {
 
     @Unique
     private final ScrollController modernUI_MC$mScrollController = new ScrollController(this);
+
+    // NeoForge 26.3.0.1's scrollbar still compares against GLFW's left button 0.
+    // The event now carries SDL button numbers, where the left button is 1.
+    @Redirect(method = "mouseClicked", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/input/MouseButtonEvent;button()I"), remap = false)
+    private int modernui$translateScrollbarButton(MouseButtonEvent event) {
+        return event.button() - InputConstants.MOUSE_BUTTON_LEFT;
+    }
 
     /**
      * @author BloCamLimb
