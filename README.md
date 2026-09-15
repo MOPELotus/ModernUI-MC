@@ -70,10 +70,20 @@ Releases for Minecraft Mod are available on [CurseForge](https://www.curseforge.
 [Modrinth](https://modrinth.com/project/3sjzyvGR).  
 For historical reasons, issues should go to Core Repo's [Issue Tracker](https://github.com/BloCamLimb/ModernUI/issues). 
 If you have any questions, feel free to join our [Discord](https://discord.gg/kmyGKt2) server.
+
+### Minecraft version branches
+
+- `master` is the default branch and tracks the latest supported Minecraft version, currently **26.3**.
+- Previous Minecraft versions use branches named only after the version, such as `26.2`.
+- When moving to a new Minecraft version, first preserve the current mainline in its version branch,
+  then continue the new version on `master`. Release tags keep identifying the exact published source.
+
 ### Compatibility Matrix
 | Minecraft version | Status     | Latest Modern UI version | Mod loaders             | Rendering backend       |
 |-------------------|------------|--------------------------|-------------------------|-------------------------|
-| 26.1~26.1.2       | ✅ Mainline | 🟢 3.13.0.5              | NeoForge, Forge, Fabric | OpenGL 3.3+, Vulkan 1.1 |
+| 26.3              | ✅ Mainline | 🟢 3.13.0.7              | NeoForge, Fabric        | OpenGL 3.3+, Vulkan 1.2 |
+| 26.2              | ⚠️ Legacy  | 🟢 3.13.0.7              | NeoForge, Forge, Fabric | OpenGL 3.3+, Vulkan 1.1 |
+| 26.1~26.1.2       | ⚠️ Legacy  | 🟢 3.13.0.5              | NeoForge, Forge, Fabric | OpenGL 3.3+, Vulkan 1.1 |
 | 1.21.6~1.21.8     | ⚠️ Legacy  | 🟢 3.13.0.3              | NeoForge, Forge, Fabric | OpenGL 3.3+             |
 | 1.21.4            | ⚫ EOL      | 🔵 3.12.0.3              | NeoForge, Forge, Fabric | OpenGL 3.3+             |
 | 1.21.3            | ⚫ EOL      | 🟡 3.11.1.10             | NeoForge, Forge, Fabric | OpenGL 3.3+             |

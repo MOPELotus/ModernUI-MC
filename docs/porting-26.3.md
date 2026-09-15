@@ -70,7 +70,7 @@ Sources were decompiled from the hash-verified official JAR with Vineflower
 
 ## Build and runtime validation
 
-- Branch: `port/minecraft-26.3`; starting commit `0295ab8a`.
+- Branch: `master`; starting commit `0295ab8a`, preserved on branch `26.2`.
 - Default configured platforms: Fabric and NeoForge; Minecraft 26.3 and
   NeoForge 26.3.0.1-beta are pinned in `gradle.properties`.
 - Common, Fabric and NeoForge sources compile against 26.3. The full configured
