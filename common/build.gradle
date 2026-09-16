@@ -43,3 +43,13 @@ tasks.register('checkSdlInput', JavaExec) {
 }
 
 check.dependsOn checkSdlInput
+
+tasks.register('checkTooltipUniforms', JavaExec) {
+    group = 'verification'
+    description = 'Checks tooltip shader uniforms against the Minecraft buffer layout.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.TooltipUniformCheck'
+}
+
+check.dependsOn checkTooltipUniforms

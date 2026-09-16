@@ -146,9 +146,10 @@ public final class SdlInput {
         if ((modifiers & InputConstants.MOD_CONTROL) != 0) result |= KeyEvent.META_CONTROL_ON;
         if ((modifiers & InputConstants.MOD_ALT) != 0) result |= KeyEvent.META_ALT_ON;
         if ((modifiers & InputConstants.MOD_SUPER) != 0) result |= KeyEvent.META_SUPER_ON;
-        // ModernUI KeyEvent retains GLFW's lock modifier bits.
-        if ((modifiers & InputConstants.MOD_CAPS_LOCK) != 0) result |= 0x10;
-        if ((modifiers & InputConstants.MOD_NUM_LOCK) != 0) result |= 0x20;
+        // SDL always reports lock state. Core 3.13 compares the entire modifier
+        // mask for deletion, cursor movement and shortcuts, so lock bits would
+        // disable them. Match the old GLFW input mode (LOCK_KEY_MODS disabled):
+        // only pressed shortcut modifiers belong in ModernUI input events.
         return result;
     }
 

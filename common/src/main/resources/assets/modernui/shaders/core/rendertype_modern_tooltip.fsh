@@ -4,15 +4,7 @@
 // Copyright (C) 2024 BloCamLimb.
 // Licensed under LGPL-3.0-or-later.
 
-layout(std140) uniform ModernTooltip {
-    mat4 u_LocalMat;
-    vec4 u_PushData0;
-    vec3 u_PushData1;
-    vec4 u_PushData2;
-    vec4 u_PushData3;
-    vec4 u_PushData4;
-    vec4 u_PushData5;
-};
+#include <modernui:tooltip_uniforms.glsl>
 
 #define u_Size u_PushData0.xy
 #define u_Radius u_PushData0.z
