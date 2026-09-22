@@ -17,6 +17,13 @@ publishing {
     }
 }
 
+// A compile-time choice: standard artifacts contain no MiSans installer.
+ext.fontVariant = providers.gradleProperty('font_variant').getOrElse('standard')
+if (!(fontVariant in ['standard', 'misans'])) {
+    throw new GradleException('font_variant must be standard or misans')
+}
+ext.fontVariantDisplayName = fontVariant == 'misans' ? 'Modern UI (MiSans)' : 'Modern UI'
+
 subprojects {
     apply plugin: 'java'
 
@@ -59,6 +66,14 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"
         it.options.release.set(25)
+    }
+
+    tasks.withType(Jar).configureEach {
+        manifest.attributes('ModernUI-Font-Variant': rootProject.fontVariant)
+        if (rootProject.fontVariant == 'standard') {
+            exclude 'icyllis/modernui/mc/MiSansInstaller*.class'
+            exclude 'icyllis/modernui/mc/MiSansSetup*.class'
+        }
     }
 
     java {

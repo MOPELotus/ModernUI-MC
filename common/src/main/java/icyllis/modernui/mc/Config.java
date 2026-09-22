@@ -233,26 +233,28 @@ public final class Config {
 
             ModernUIClient.sUseColorEmoji = mUseColorEmoji.get();
             ModernUIClient.sEmojiShortcodes = mEmojiShortcodes.get();
-            String firstFontFamily = FontDefaults.FIRST_FONT_FAMILY;
-            List<String> fallbackFontFamilyList = FontDefaults.createFallbackFontFamilyList();
-            if (!Objects.equals(mFirstFontFamily.get(), firstFontFamily)) {
-                mFirstFontFamily.set(firstFontFamily);
+            boolean importedLegacy = FontVariantConfig.consumeLegacyImport();
+            boolean resetLegacyFonts = !FontVariant.MISANS && importedLegacy
+                    && FontDefaults.isLegacyMiSansProfile(mFirstFontFamily.get(),
+                            mFallbackFontFamilyList.get(), mFontRegistrationList.get());
+            if (FontVariant.MISANS || resetLegacyFonts) {
+                mFirstFontFamily.set(FontDefaults.FIRST_FONT_FAMILY);
+                mFallbackFontFamilyList.set(FontDefaults.createFallbackFontFamilyList());
+                mFontRegistrationList.set(FontDefaults.createFontRegistrationList());
             }
-            if (!Objects.equals(mFallbackFontFamilyList.get(), fallbackFontFamilyList)) {
-                mFallbackFontFamilyList.set(fallbackFontFamilyList);
+            ModernUIClient.sFirstFontFamily = mFirstFontFamily.get();
+            ModernUIClient.sFallbackFontFamilyList = mFallbackFontFamilyList.get();
+            ModernUIClient.sFontRegistrationList = mFontRegistrationList.get();
+            if (FontVariant.MISANS) {
+                int fontWeight = FontDefaults.normalizeFontWeight(mFontWeight.get());
+                if (fontWeight != mFontWeight.get()) {
+                    mFontWeight.set(fontWeight);
+                }
+                ModernUIClient.sFontWeight = fontWeight;
             }
-            List<String> fontRegistrationList = FontDefaults.createFontRegistrationList();
-            if (!Objects.equals(mFontRegistrationList.get(), fontRegistrationList)) {
-                mFontRegistrationList.set(fontRegistrationList);
+            if (resetLegacyFonts) {
+                MuiPlatform.get().saveConfig(TYPE_CLIENT);
             }
-            ModernUIClient.sFirstFontFamily = firstFontFamily;
-            ModernUIClient.sFallbackFontFamilyList = fallbackFontFamilyList;
-            ModernUIClient.sFontRegistrationList = fontRegistrationList;
-            int fontWeight = FontDefaults.normalizeFontWeight(mFontWeight.get());
-            if (fontWeight != mFontWeight.get()) {
-                mFontWeight.set(fontWeight);
-            }
-            ModernUIClient.sFontWeight = fontWeight;
 
             if (mPropagate) {
                 apply();

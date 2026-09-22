@@ -46,19 +46,23 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Build jars
-        run: |
-          chmod +x ./gradlew
-          ./gradlew --no-daemon build
-
-      - name: Collect release jars
+      - name: Build and collect both font editions
         shell: bash
         run: |
           set -euo pipefail
+          chmod +x ./gradlew
           mkdir -p release
-          cp fabric/build/libs/*-universal.jar release/
-          cp forge/build/libs/*-universal.jar release/
-          cp neoforge/build/libs/*-universal.jar release/
+          for variant in standard misans; do
+            ./gradlew --no-daemon clean build -Pfont_variant="$variant"
+            suffix=universal
+            if [[ "$variant" == misans ]]; then suffix=universal-misans; fi
+            for loader in fabric forge neoforge; do
+              jars=("$loader"/build/libs/*-"$suffix".jar)
+              [[ ${#jars[@]} -eq 1 && -f "${jars[0]}" ]]
+              cp -- "${jars[0]}" release/
+            done
+          done
+          python3 scripts/check-release-variants.py release fabric forge neoforge
           ls -lh release
 
       - name: Upload build artifacts

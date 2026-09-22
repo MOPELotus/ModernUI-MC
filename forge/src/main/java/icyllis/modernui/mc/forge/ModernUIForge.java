@@ -151,8 +151,9 @@ public final class ModernUIForge extends ModernUIMod {
             if (!DatagenModLoader.isRunningDataGen()) {
                 UIManagerForge.initialize();
             }
+            icyllis.modernui.mc.FontVariantConfig.prepare(MuiPlatformForge.BOOTSTRAP_PATH.getParent());
             context.registerConfig(ModConfig.Type.CLIENT, ConfigImpl.CLIENT_SPEC,
-                    ModernUI.NAME_CPT + "/client.toml");
+                    ModernUI.NAME_CPT + "/" + icyllis.modernui.mc.FontVariant.CLIENT_CONFIG_NAME);
             context.registerConfig(ModConfig.Type.CLIENT, ConfigImpl.TEXT_SPEC,
                     ModernUI.NAME_CPT + "/text.toml");
             FontResourceManager.getInstance();
