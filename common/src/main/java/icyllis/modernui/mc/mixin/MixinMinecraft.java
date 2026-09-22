@@ -72,7 +72,9 @@ public abstract class MixinMinecraft {
     @Inject(method = "renderFrame", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/DeltaTracker$Timer;advanceRealTime(J)V"))
     private void onStartRenderFrameUpdate(boolean advanceGameTime, CallbackInfo ci) {
-        icyllis.modernui.mc.MiSansSetup.tick((net.minecraft.client.Minecraft) (Object) this);
+        if (icyllis.modernui.mc.FontVariant.MISANS) {
+            icyllis.modernui.mc.MiSansSetup.tick((net.minecraft.client.Minecraft) (Object) this);
+        }
         MuiModApi.dispatchOnRenderFrame(0, MuiModApi.RENDER_STAGE_UPDATE);
     }
 

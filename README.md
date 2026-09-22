@@ -1,3 +1,5 @@
+普通版 / MiSans 版的功能、配置迁移与四包 / 六包构建说明：[字体版本说明](docs/font-editions.md)。
+
 # Modern UI for Minecraft
 [![CurseForge](http://cf.way2muchnoise.eu/full_352491_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/modern-ui)
 [![CurseForge](http://cf.way2muchnoise.eu/versions/For%20Minecraft_352491_all.svg)](https://www.curseforge.com/minecraft/mc-mods/modern-ui)

@@ -181,7 +181,9 @@ public abstract class ModernUIClient extends ModernUI {
                                  @Nonnull Consumer<FontFamily> firstSetter,
                                  boolean firstLoad) {
         if (firstLoad) {
-            MiSansSetup.ensureInstalled(resolveFontRegistrationPath(FontDefaults.MODPACK_FONT_DIRECTORY));
+            if (FontVariant.MISANS) {
+                MiSansSetup.ensureInstalled(resolveFontRegistrationPath(FontDefaults.MODPACK_FONT_DIRECTORY));
+            }
             var tasks = new ArrayList<CompletableFuture<Void>>();
             var fontManager = FontResourceManager.getInstance();
             var registrationList = sFontRegistrationList;
@@ -266,7 +268,7 @@ public abstract class ModernUIClient extends ModernUI {
             }
             CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
         }
-        if (MiSansSetup.required) {
+        if (FontVariant.MISANS && MiSansSetup.required) {
             loadSingleFont("Source Han Sans CN Medium", selected, firstSetter);
             return;
         }
@@ -298,7 +300,7 @@ public abstract class ModernUIClient extends ModernUI {
             return true;
         } catch (Exception ignored) {
         }
-        if (FontDefaults.isWeightControlledFontFamily(value)) {
+        if (FontVariant.MISANS && FontDefaults.isWeightControlledFontFamily(value)) {
             FontFamily family = loadWeightedMiSansFont(value);
             if (family != null) {
                 selected.add(family);
@@ -333,7 +335,7 @@ public abstract class ModernUIClient extends ModernUI {
             }
             return true;
         }
-        if (FontDefaults.isRequiredFontFamily(value)) {
+        if (FontVariant.MISANS && FontDefaults.isRequiredFontFamily(value)) {
             LOGGER.error(MARKER,
                     "Required MiSans font family '{}' is missing. Put MiSans font files in '{}' " +
                             "or set fontRegistrationList to their directory/file.",

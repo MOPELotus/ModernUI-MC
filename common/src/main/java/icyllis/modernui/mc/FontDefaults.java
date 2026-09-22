@@ -26,7 +26,9 @@ import java.util.List;
 @ApiStatus.Internal
 public final class FontDefaults {
 
-    public static final String FIRST_FONT_FAMILY = "MiSans";
+    public static final String MISANS_FIRST_FONT_FAMILY = "MiSans";
+    public static final String FIRST_FONT_FAMILY = FontVariant.MISANS
+            ? MISANS_FIRST_FONT_FAMILY : "Inter Frozen Medium";
     public static final String FALLBACK_FONT_FAMILY_L3 = "MiSans L3";
     public static final String FALLBACK_FONT_FAMILY_LATIN = "MiSans Latin";
     public static final String FALLBACK_FONT_FAMILY_TC = "MiSans TC";
@@ -45,6 +47,11 @@ public final class FontDefaults {
     }
 
     public static List<String> createFallbackFontFamilyList() {
+        if (!FontVariant.MISANS) {
+            return new ArrayList<>(List.of("Source Han Sans CN Medium", "Noto Sans", "Segoe UI Variable",
+                    "Segoe UI", "San Francisco", "Open Sans", "SimHei", "STHeiti", "Segoe UI Symbol",
+                    "mui-i18n-compat"));
+        }
         List<String> list = new ArrayList<>();
         list.add(FALLBACK_FONT_FAMILY_L3);
         list.add(FALLBACK_FONT_FAMILY_LATIN);
@@ -54,8 +61,19 @@ public final class FontDefaults {
 
     public static List<String> createFontRegistrationList() {
         List<String> list = new ArrayList<>();
-        list.add(MODPACK_FONT_DIRECTORY);
+        if (FontVariant.MISANS) {
+            list.add(MODPACK_FONT_DIRECTORY);
+        }
         return list;
+    }
+
+    /** Only the old forced profile is reset when importing into the standard edition. */
+    public static boolean isLegacyMiSansProfile(String first, List<? extends String> fallbacks,
+                                                List<? extends String> registration) {
+        return MISANS_FIRST_FONT_FAMILY.equals(first)
+                && List.of(FALLBACK_FONT_FAMILY_L3, FALLBACK_FONT_FAMILY_LATIN,
+                           FALLBACK_FONT_FAMILY_TC).equals(fallbacks)
+                && List.of(MODPACK_FONT_DIRECTORY).equals(registration);
     }
 
     public static boolean isRequiredFontFamily(String family) {
@@ -67,7 +85,7 @@ public final class FontDefaults {
     }
 
     public static boolean isMiSansFontFamily(String family) {
-        return FIRST_FONT_FAMILY.equals(family) ||
+        return MISANS_FIRST_FONT_FAMILY.equals(family) ||
                 LEGACY_FIRST_FONT_FAMILY_VF.equals(family) ||
                 FALLBACK_FONT_FAMILY_L3.equals(family) ||
                 FALLBACK_FONT_FAMILY_LATIN.equals(family) ||
@@ -99,7 +117,7 @@ public final class FontDefaults {
     }
 
     private static String getWeightedFontFilePrefix(String family) {
-        if (FIRST_FONT_FAMILY.equals(family) ||
+        if (MISANS_FIRST_FONT_FAMILY.equals(family) ||
                 LEGACY_FIRST_FONT_FAMILY_VF.equals(family)) {
             return "MiSans";
         }

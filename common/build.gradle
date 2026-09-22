@@ -65,3 +65,35 @@ tasks.register('checkTextMarquee', JavaExec) {
 }
 
 check.dependsOn checkTextMarquee
+
+// A task-backed source directory also supplies the dependency to loader compiles,
+// which compile the common sources directly.
+def generateFontVariant = tasks.register('generateFontVariant') {
+    def output = layout.buildDirectory.dir('generated/sources/fontVariant/java')
+    inputs.property('fontVariant', rootProject.fontVariant)
+    outputs.dir(output)
+    doLast {
+        def target = output.get().file('icyllis/modernui/mc/FontVariant.java').asFile
+        target.parentFile.mkdirs()
+        target.text = """package icyllis.modernui.mc;
+
+/** Build-time edition; never selected by a runtime property or config file. */
+public final class FontVariant {
+    public static final boolean MISANS = ${rootProject.fontVariant == 'misans'};
+    public static final String NAME = "${rootProject.fontVariant}";
+    public static final String CLIENT_CONFIG_NAME = "client-${rootProject.fontVariant}.toml";
+    private FontVariant() {}
+}
+"""
+    }
+}
+sourceSets.main.java.srcDir(generateFontVariant)
+
+tasks.register('checkFontVariant', JavaExec) {
+    group = 'verification'
+    description = 'Checks font defaults, legacy configuration isolation and compiled edition boundaries.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.FontVariantCheck'
+}
+check.dependsOn checkFontVariant

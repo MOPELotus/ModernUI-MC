@@ -63,7 +63,8 @@ public final class ConfigImpl {
             {
                 SimpleConfigSpec.Builder builder = new SimpleConfigSpec.Builder();
                 CLIENT = new Client(builder);
-                CLIENT_SPEC = builder.build(configPath("client.toml"));
+                CLIENT_SPEC = builder.build(icyllis.modernui.mc.FontVariantConfig.prepare(
+                        MuiPlatformFabric.BOOTSTRAP_PATH.getParent()));
             }
             SimpleConfigSpec.Builder builder = new SimpleConfigSpec.Builder();
             TEXT = new Text(builder);
@@ -492,7 +493,7 @@ public final class ConfigImpl {
             builder.comment("Font Config")
                     .push("font");
 
-            // MiSans, MiSans L3, MiSans Latin, MiSans TC
+            // Defaults depend on the selected distribution; standard allows custom fonts.
             mFirstFontFamily = builder.comment(
                             "The first font family to use. See fallbackFontFamilyList")
                     .define("firstFontFamily", FontDefaults.FIRST_FONT_FAMILY);
@@ -520,10 +521,10 @@ public final class ConfigImpl {
                             "System requires random access to these files, you should not remove them while running.",
                             "This is only read once when the game is loaded, i.e. registration.")
                     .defineList("fontRegistrationList", FontDefaults::createFontRegistrationList, s -> true);
-            mFontWeight = builder.comment(
+            mFontWeight = icyllis.modernui.mc.FontVariant.MISANS ? builder.comment(
                             "The MiSans font weight. Values are discrete CSS-like weights and select concrete font files.")
                     .defineInRange("fontWeight", FontDefaults.DEFAULT_FONT_WEIGHT,
-                            FontDefaults.FONT_WEIGHT_MIN, FontDefaults.FONT_WEIGHT_MAX);
+                            FontDefaults.FONT_WEIGHT_MIN, FontDefaults.FONT_WEIGHT_MAX) : null;
             mUseColorEmoji = builder.comment(
                             "Whether to use Google Noto Color Emoji, otherwise grayscale emoji (faster).",
                             "See Unicode 15.0 specification for details on how this affects text layout.")

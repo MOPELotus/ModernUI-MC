@@ -140,7 +140,7 @@ loom.nestJars(
 )
 
 shadowJar {
-    archiveClassifier.set("universal")
+    archiveClassifier.set(rootProject.fontVariant == "misans" ? "universal-misans" : "universal")
     configurations = [project.configurations.shadow]
 
     /*dependencies {
@@ -202,9 +202,10 @@ if (project.hasProperty("keystore")) {
 
 processResources {
     inputs.property 'version', mod_version
+    inputs.property 'display_name', rootProject.fontVariantDisplayName
 
     filesMatching("fabric.mod.json") {
-        expand 'version': mod_version
+        expand 'version': mod_version, 'display_name': rootProject.fontVariantDisplayName
     }
 }
 

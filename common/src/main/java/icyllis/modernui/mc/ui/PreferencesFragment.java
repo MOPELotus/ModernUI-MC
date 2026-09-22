@@ -39,6 +39,7 @@ import icyllis.modernui.graphics.text.FontFamily;
 import icyllis.modernui.mc.Config;
 import icyllis.modernui.mc.ConfigItem;
 import icyllis.modernui.mc.FontDefaults;
+import icyllis.modernui.mc.FontVariant;
 import icyllis.modernui.mc.ModernUIClient;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.MuiModApi;
@@ -436,6 +437,16 @@ public class PreferencesFragment extends Fragment {
                 firstLine.addView(value, params);
             }
 
+            if (!FontVariant.MISANS) {
+                var accordion = new PreferredFontAccordion(category, mOnClientConfigChanged, onFontChanged[0]);
+                firstLine.setOnClickListener(accordion);
+                firstLine.setOnCreateContextMenuListener(accordion);
+                TypedValue value = new TypedValue();
+                context.getTheme().resolveAttribute(R.ns, R.attr.colorControlHighlight, value, true);
+                firstLine.setBackground(new RippleDrawable(ColorStateList.valueOf(value.data), null,
+                        new ColorDrawable(~0)));
+            }
+
             firstLine.setMinimumHeight(firstLine.dp(36));
             var params = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             category.addView(firstLine, params);
@@ -450,15 +461,23 @@ public class PreferencesFragment extends Fragment {
                     ModernUIText.CONFIG.mUseVanillaFont,
                     ModernUIText.CONFIG::saveAndReloadAsync));*/
 
-            new IntegerOption(context, "modernui.center.font.fontWeight",
-                    FontDefaults.FONT_WEIGHT_STEP,
-                    Config.CLIENT.mFontWeight,
-                    value -> Config.CLIENT.mFontWeight.set(FontDefaults.normalizeFontWeight(value)),
-                    () -> {
-                        mOnClientConfigChanged.run();
-                        reloadDefaultTypeface(context, onFontChanged[0]);
-                    })
-                    .create(category, 3);
+            if (FontVariant.MISANS) {
+                new IntegerOption(context, "modernui.center.font.fontWeight",
+                        FontDefaults.FONT_WEIGHT_STEP,
+                        Config.CLIENT.mFontWeight,
+                        value -> Config.CLIENT.mFontWeight.set(FontDefaults.normalizeFontWeight(value)),
+                        () -> {
+                            mOnClientConfigChanged.run();
+                            reloadDefaultTypeface(context, onFontChanged[0]);
+                        })
+                        .create(category, 3);
+            } else {
+                category.addView(createStringListOption(context, "modernui.center.font.fallbackFonts",
+                        Config.CLIENT.mFallbackFontFamilyList, () -> {
+                            mOnClientConfigChanged.run();
+                            reloadDefaultTypeface(context, onFontChanged[0]);
+                        }));
+            }
 
             new BooleanOption(context, "modernui.center.font.colorEmoji",
                     Config.CLIENT.mUseColorEmoji, () -> {
@@ -466,6 +485,15 @@ public class PreferencesFragment extends Fragment {
                 reloadDefaultTypeface(context, onFontChanged[0]);
             })
                     .create(category);
+
+            if (!FontVariant.MISANS) {
+                category.addView(createStringListOption(context, "modernui.center.font.fontRegistrationList",
+                        Config.CLIENT.mFontRegistrationList, () -> {
+                            mClientConfigChanged = true;
+                            Toast.makeText(context, I18n.get("gui.modernui.restart_to_work"),
+                                    Toast.LENGTH_SHORT).show();
+                        }));
+            }
 
             new BooleanOption(context, "modernui.center.font.linearMetrics",
                     Config.CLIENT.mLinearMetrics, mOnClientConfigChanged)
