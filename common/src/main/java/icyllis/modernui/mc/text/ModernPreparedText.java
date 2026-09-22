@@ -25,6 +25,7 @@ import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import icyllis.arc3d.core.Rect2f;
 import icyllis.modernui.mc.GradientRectangleRenderState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -235,7 +236,7 @@ public class ModernPreparedText implements Font.PreparedText {
                         mode == TextRenderType.MODE_SDF_FILL
                                 ? RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR)
                                 : texture.getSampler(),
-                        i, isColorEmoji,
+                        i, isColorEmoji, isBitmapFont,
                         preferredMode == TextRenderType.MODE_NORMAL));
             }
             float upSkew = 0;
@@ -244,9 +245,13 @@ public class ModernPreparedText implements Font.PreparedText {
                 upSkew = 0.25f * ascent;
                 downSkew = 0.25f * (ascent - h);
             }
-            bounds.joinNoCheck(
-                    rx + downSkew, ry, rx + w + upSkew, ry + h
-            );
+            // Include pixel-grid rounding and the transparent filtering border.
+            // GuiTextRenderState uses this bound for culling and layer selection
+            // before the glyph vertices are built.
+            float padding = preferredMode == TextRenderType.MODE_NORMAL
+                    ? (isBitmapFont || isColorEmoji ? 0.5f : 1.5f) * invDensity : 0;
+            bounds.joinNoCheck(rx + downSkew - padding, ry - padding,
+                    rx + w + upSkew + padding, ry + h + padding);
         }
         if (!textRuns.isEmpty()) {
             textRuns.getLast().glyphEnd = glyphs.length;
@@ -303,6 +308,8 @@ public class ModernPreparedText implements Font.PreparedText {
     @SuppressWarnings("ForLoopReplaceableByForEach")
     public void submitRuns(GuiRenderState renderState, Matrix3x2fc pose,
                            @Nullable ScreenRectangle scissor) {
+        boolean linearSampling = TextSampling.needsLinear(pose, this.x, this.top,
+                density, Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale);
         float x = this.x;
         float top = this.top;
         if (xAdj != 0 || yAdj != 0) {
@@ -337,7 +344,10 @@ public class ModernPreparedText implements Font.PreparedText {
             var run = runs.get(i);
             renderState.addGlyphToCurrentLayer(
                     new TextRunRenderState(pose, run.pipeline,
-                            TextureSetup.singleTextureWithLightmap(run.textureView, run.sampler),
+                            TextureSetup.singleTextureWithLightmap(run.textureView,
+                                    linearSampling && run.isDirectMask && !run.isColorEmoji && !run.isBitmapFont
+                                            ? RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)
+                                            : run.sampler),
                             scissor,
                             x, top, color, dropShadow,
                             glyphs, positions, flags,
@@ -368,15 +378,17 @@ public class ModernPreparedText implements Font.PreparedText {
         public final int glyphStart;
         public int glyphEnd;
         public final boolean isColorEmoji;
+        public final boolean isBitmapFont;
         public final boolean isDirectMask;
 
         public TextRun(RenderPipeline pipeline, GpuTextureView textureView, GpuSampler sampler,
-                       int glyphStart, boolean isColorEmoji, boolean isDirectMask) {
+                       int glyphStart, boolean isColorEmoji, boolean isBitmapFont, boolean isDirectMask) {
             this.pipeline = pipeline;
             this.textureView = textureView;
             this.sampler = sampler;
             this.glyphStart = glyphStart;
             this.isColorEmoji = isColorEmoji;
+            this.isBitmapFont = isBitmapFont;
             this.isDirectMask = isDirectMask;
         }
     }
