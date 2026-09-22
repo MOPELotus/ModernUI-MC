@@ -54,16 +54,15 @@ public record TextRunRenderState(
         int r = color >> 16 & 0xff;
         int g = color >> 8 & 0xff;
         int b = color & 0xff;
-        final float baseline = top + TextLayout.sBaselineOffset;
         if (dropShadow && ModernTextRenderer.sAllowShadow && !isColorEmoji) {
-            buildPass(vertexConsumer, invDensity, r >> 2, g >> 2, b >> 2, a, baseline, true);
+            buildPass(vertexConsumer, invDensity, r >> 2, g >> 2, b >> 2, a, true);
         }
-        buildPass(vertexConsumer, invDensity, r, g, b, a, baseline, false);
+        buildPass(vertexConsumer, invDensity, r, g, b, a, false);
     }
 
     private void buildPass(@Nonnull VertexConsumer builder, float invDensity,
                            final int startR, final int startG, final int startB, final int a,
-                           float baseline, boolean isShadow) {
+                           boolean isShadow) {
         int r;
         int g;
         int b;
@@ -72,9 +71,10 @@ public record TextRunRenderState(
         var flags = this.flags;
         var pose = this.pose;
         float x = this.x;
+        float y = this.top;
         if (isShadow) {
             x += shadowOffset;
-            baseline += shadowOffset;
+            y += shadowOffset;
         }
         for (int i = glyphStart; i < glyphEnd; i++) {
             var vglyph = glyphs[i];
@@ -84,11 +84,14 @@ public record TextRunRenderState(
             if (!(vglyph instanceof ModernBakedGlyph glyph)) {
                 continue;
             }
+            if (glyph.width <= 0 || glyph.height <= 0) {
+                continue;
+            }
             final int bits = flags[i];
             float rx;
             float ry;
-            final float w;
-            final float h;
+            float w;
+            float h;
             boolean fakeItalic = false;
             int ascent = 0;
             if ((bits & CharacterStyle.NO_SHADOW_MASK) != 0 && isShadow) {
@@ -105,8 +108,8 @@ public record TextRunRenderState(
                     scaleFactor = TextLayoutProcessor.sBaseFontSize / GlyphManager.EMOJI_BASE;
                 }
                 fakeItalic = (bits & CharacterStyle.ITALIC_MASK) != 0;
-                rx = x + positions[i << 1] + glyph.x * scaleFactor;
-                ry = baseline + positions[i << 1 | 1] + glyph.y * scaleFactor;
+                rx = positions[i << 1] + glyph.x * scaleFactor;
+                ry = TextLayout.sBaselineOffset + positions[i << 1 | 1] + glyph.y * scaleFactor;
                 if (isShadow) {
                     // bitmap font shadow offset is always 1 pixel
                     rx += 1.0f - shadowOffset;
@@ -116,16 +119,34 @@ public record TextRunRenderState(
                 w = glyph.width * scaleFactor;
                 h = glyph.height * scaleFactor;
             } else {
-                rx = x + positions[i << 1] + glyph.x * invDensity;
-                ry = baseline + positions[i << 1 | 1] + glyph.y * invDensity;
+                rx = positions[i << 1] + glyph.x * invDensity;
+                ry = TextLayout.sBaselineOffset + positions[i << 1 | 1] + glyph.y * invDensity;
 
                 w = glyph.width * invDensity;
                 h = glyph.height * invDensity;
             }
             if (isDirectMask) {
-                // align to screen pixel center in 2D
+                // Quantize the fixed layout, never the animated draw origin.
                 rx = Math.round(rx * density) * invDensity;
                 ry = Math.round(ry * density) * invDensity;
+            }
+            rx += x;
+            ry += y;
+            float u1 = glyph.u1, v1 = glyph.v1, u2 = glyph.u2, v2 = glyph.v2;
+            if (isDirectMask && (bits & CharacterStyle.ANY_BITMAP_REPLACEMENT) == 0) {
+                // A8 glyphs have a transparent 2-texel atlas border. Include one
+                // texel in the quad so bilinear coverage at an outer stem is not
+                // clipped by the geometry as it crosses a screen pixel.
+                float du = (u2 - u1) / glyph.width;
+                float dv = (v2 - v1) / glyph.height;
+                rx -= invDensity;
+                ry -= invDensity;
+                w += 2 * invDensity;
+                h += 2 * invDensity;
+                u1 -= du;
+                v1 -= dv;
+                u2 += du;
+                v2 += dv;
             }
             if (isColorEmoji) {
                 r = 0xff;
@@ -153,19 +174,19 @@ public record TextRunRenderState(
             }
             builder.addVertexWith2DPose(pose, rx + upSkew, ry)
                     .setColor(r, g, b, a)
-                    .setUv(glyph.u1, glyph.v1)
+                    .setUv(u1, v1)
                     .setLight(LightCoordsUtil.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + downSkew, ry + h)
                     .setColor(r, g, b, a)
-                    .setUv(glyph.u1, glyph.v2)
+                    .setUv(u1, v2)
                     .setLight(LightCoordsUtil.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + w + downSkew, ry + h)
                     .setColor(r, g, b, a)
-                    .setUv(glyph.u2, glyph.v2)
+                    .setUv(u2, v2)
                     .setLight(LightCoordsUtil.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + w + upSkew, ry)
                     .setColor(r, g, b, a)
-                    .setUv(glyph.u2, glyph.v1)
+                    .setUv(u2, v1)
                     .setLight(LightCoordsUtil.FULL_BRIGHT);
         }
     }

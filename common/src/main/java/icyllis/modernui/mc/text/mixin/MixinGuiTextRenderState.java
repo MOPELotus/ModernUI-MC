@@ -69,15 +69,13 @@ public class MixinGuiTextRenderState {
             mode = TextRenderType.MODE_NORMAL;
             isPureTranslation = true;
         }
-        // compute exact font size and position
+        // Compute the raster size, but keep translation in the draw pose. Including
+        // it in each glyph's pixel-grid rounding makes fractional scrolling change
+        // the spacing between glyphs on successive frames.
         float uniformScale = 1;
-        float xAdj = 0, yAdj = 0;
         if (ModernTextRenderer.sComputeDeviceFontSize &&
                 (isPureTranslation || mode == TextRenderType.MODE_UNIFORM_SCALE)) {
             // uniform scale case
-            // extract the translation vector for snapping to pixel grid
-            xAdj = ctm.m20() / ctm.m00();
-            yAdj = ctm.m21() / ctm.m11();
             // total scale
             uniformScale = ctm.m00();
             if (MathUtil.isApproxEqual(uniformScale, 1)) {
@@ -93,6 +91,6 @@ public class MixinGuiTextRenderState {
                 }
             }
         }
-        return layout.prepareTextWithDensity(x, y, color, dropShadow, mode, uniformScale, backgroundColor, xAdj, yAdj);
+        return layout.prepareTextWithDensity(x, y, color, dropShadow, mode, uniformScale, backgroundColor, 0, 0);
     }
 }
