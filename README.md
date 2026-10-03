@@ -98,6 +98,32 @@ If you have any questions, feel free to join our [Discord](https://discord.gg/km
 | 1.19.2            | ⚫ EOL      | 🔴 3.10.1.2              | Forge                   | OpenGL 3.3+             |
 | 1.18.1~1.18.2     | ⚫ EOL      | 🔴 3.10.1.1              | Forge                   | OpenGL 3.3+             |
 
+### Known compatibility issues / 已知兼容性问题
+
+#### Remove Reloading Screen — Minecraft 26.3 (Fabric)
+
+Players have reported a startup crash with ModernUI and Remove Reloading Screen on Minecraft 26.3 / Fabric
+when Remove Reloading Screen uses `hideOverlays = "ALL"`. The error reports missing shader files even though
+they are present in the ModernUI JAR. In the reported environment, changing the following setting in
+**Remove Reloading Screen's configuration** and restarting the game resolved the crash:
+
+```toml
+[global]
+    hideOverlays = "RELOADING"
+```
+
+Edit the existing `hideOverlays` entry under `[global]`; this is not a ModernUI setting.
+`RELOADING` keeps the initial loading overlay visible while hiding subsequent resource reload overlays.
+This is a configuration workaround based on a player's real-client investigation, not a code fix;
+the suspected resource initialization ordering issue has not been confirmed here.
+The report covers Fabric on 26.3; other Minecraft versions and loaders have not been verified for this issue.
+
+**中文：** Minecraft 26.3 / Fabric 同时安装 ModernUI 和 Remove Reloading Screen 时，后者使用
+`hideOverlays = "ALL"` 的配置可能导致启动崩溃，报错为找不到着色器文件，即使 JAR 内实际存在这些文件。
+据玩家实机排查，将 **Remove Reloading Screen 配置**中 `[global]` 下已有的 `hideOverlays` 改为
+`"RELOADING"`，保存并重启游戏即可规避：保留首次加载屏幕，仅隐藏后续资源重载屏幕。
+这是已反馈有效的配置规避方案；初始化时序原因仍属推测，尚无代码修复或其他版本、加载器的验证结论。
+
 ### License
 * Modern UI for Minecraft
   - Copyright (C) 2019-2026 BloCamLimb et al.

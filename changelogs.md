@@ -1,5 +1,10 @@
 Changelogs
 ===
+### Documentation update — Minecraft 26.3 (2026-10-03)
+* Document a player-reported startup crash with ModernUI and Remove Reloading Screen on Fabric when `hideOverlays = "ALL"`; the error reports missing shader resources that are present in the JAR.
+* Workaround reported to resolve the crash: change the existing `[global]` / `hideOverlays` setting in Remove Reloading Screen's configuration to `"RELOADING"`, then restart the game. This preserves the initial loading overlay and hides subsequent resource reload overlays.
+* See [the README compatibility note](README.md#known-compatibility-issues--已知兼容性问题). This is a documentation update, not a code fix; the suspected initialization ordering issue and other versions/loaders have not been verified here.
+
 ### Modern UI 3.13.0.5
 Changes from
 * 3.13.0.4 → 3.13.0.5 for Minecraft 26.1-26.1.2
