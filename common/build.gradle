@@ -21,6 +21,7 @@ dependencies {
     mappings loom.officialMojangMappings()
     modCompileOnly "maven.modrinth:vulkanmod:${vulkanmod_version}"
     compileOnly 'org.spongepowered:mixin:0.8.7'
+    testImplementation 'org.spongepowered:mixin:0.8.7'
     compileOnly 'org.ow2.asm:asm-tree:9.8'
     testImplementation 'org.ow2.asm:asm-tree:9.8'
 
@@ -30,6 +31,7 @@ dependencies {
     }
 
     compileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
+    testImplementation("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
 }
 
 test {
@@ -79,13 +81,32 @@ tasks.register('checkFontVariant', JavaExec) {
 }
 check.dependsOn checkFontVariant
 
-['TooltipUniform', 'GlfwInput', 'PackMetadata'].each { checkName ->
+['TooltipUniform', 'GlfwInput', 'VulkanDepthBarrier', 'PackMetadata', 'VulkanSurface'].each { checkName ->
     def checkTask = tasks.register("check${checkName}", JavaExec) {
         group = 'verification'
         dependsOn testClasses
         classpath = sourceSets.test.runtimeClasspath
         mainClass = "icyllis.modernui.mc.test.${checkName}Check"
         systemProperty 'modernui.projectRoot', rootProject.projectDir.absolutePath
+        if (checkName in ['VulkanDepthBarrier', 'VulkanSurface']) {
+            doFirst {
+                def vulkanJars = configurations.compileClasspath.files.findAll {
+                    it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod') && it.name.endsWith('.jar')
+                }
+                if (vulkanJars.empty) throw new GradleException('Missing VulkanMod API JAR for injection verification')
+                setArgs(vulkanJars.collect { it.absolutePath })
+            }
+        }
     }
     check.dependsOn checkTask
 }
+
+
+tasks.register('checkSpirvArrayLayout', JavaExec) {
+    group = 'verification'
+    description = 'Checks SPIR-V local array layout against the actual compiler and mixin target.'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.SpirvArrayLayoutCheck'
+}
+check.dependsOn checkSpirvArrayLayout
