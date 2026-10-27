@@ -67,7 +67,7 @@ public abstract class MixinCommandSuggestions {
 
     @Inject(method = "updateCommandInfo",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientSuggestionProvider;" +
-                    "getCustomTabSuggestions()Ljava/util/Collection;"),
+                    "getCustomTabSugggestions()Ljava/util/Collection;"),
             cancellable = true)
     private void onUpdateCommandInfo(CallbackInfo ci) {
         if (ModernUIClient.sEmojiShortcodes) {

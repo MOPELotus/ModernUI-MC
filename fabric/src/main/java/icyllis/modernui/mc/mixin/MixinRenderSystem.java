@@ -18,13 +18,12 @@
 
 package icyllis.modernui.mc.mixin;
 
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import icyllis.arc3d.engine.ContextOptions;
 import icyllis.modernui.core.Core;
 import icyllis.modernui.mc.ModernUIClient;
 import icyllis.modernui.mc.ModernUIMod;
-import icyllis.modernui.mc.NativeVulkanIntegration;
+import icyllis.modernui.mc.VulkanModIntegration;
 import icyllis.modernui.mc.fabric.UIManagerFabric;
 import net.minecraft.util.TimeSource;
 import org.lwjgl.opengl.GL;
@@ -52,7 +51,7 @@ public class MixinRenderSystem {
     }
 
     @Inject(method = "initRenderer", at = @At("TAIL"), remap = false)
-    private static void onInitRenderer(GpuDevice device, CallbackInfo ci) {
+    private static void onInitRenderer(CallbackInfo ci) {
         Core.initialize();
         ContextOptions options = new ContextOptions();
         String value = ModernUIClient.getBootstrapProperty(ModernUIClient.BOOTSTRAP_USE_STAGING_BUFFERS_IN_OPENGL);
@@ -64,9 +63,8 @@ public class MixinRenderSystem {
             options.mAllowGLSPIRV = Boolean.parseBoolean(value);
         }
         options.mDriverBugWorkarounds = ModernUIClient.getGpuDriverBugWorkarounds();
-        switch (device.getDeviceInfo().backendName()) {
+        switch (RenderSystem.getDevice().getBackendName()) {
             case "OpenGL" -> {
-                // Minecraft 26.2 uses zero-to-one clipping when ARB_clip_control is available.
                 // Match the shared context before Arc3D builds its projection shaders.
                 options.mDepthClipNegativeOneToOne = !GL.getCapabilities().GL_ARB_clip_control ||
                         org.lwjgl.opengl.GL33C.glGetInteger(org.lwjgl.opengl.ARBClipControl.GL_CLIP_DEPTH_MODE) ==
@@ -79,11 +77,15 @@ public class MixinRenderSystem {
                 }
             }
             case "Vulkan" -> {
-                ModernUIMod.setVulkanBackend(true);
-                var context = NativeVulkanIntegration.wrapContext();
+                if (!ModernUIMod.isVulkanModLoaded()) {
+                    throw new UnsupportedOperationException("Unknown Vulkan backend");
+                }
+                var context = VulkanModIntegration.wrapContext();
                 if (!Core.initVulkan(context, options)) {
                     throw new IllegalStateException("Failed to create Vulkan device");
                 }
+                VulkanModIntegration.configureShaderCaps();
+                ModernUIMod.setVulkanBackend(true);
             }
         }
         UIManagerFabric.initialize();

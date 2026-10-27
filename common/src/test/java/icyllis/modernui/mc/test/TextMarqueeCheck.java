@@ -1,6 +1,7 @@
 package icyllis.modernui.mc.test;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.textures.FilterMode;
 import icyllis.arc3d.core.Rect2f;
 import icyllis.arc3d.engine.Engine;
 import icyllis.arc3d.engine.SamplerDesc;
@@ -16,6 +17,7 @@ import icyllis.arc3d.sketch.j2d.Typeface_JDK;
 import icyllis.modernui.mc.CanvasTextOrigin;
 import icyllis.modernui.mc.text.CharacterStyle;
 import icyllis.modernui.mc.text.ModernBakedGlyph;
+import icyllis.modernui.mc.text.ModernFontAtlas;
 import icyllis.modernui.mc.text.TextRunRenderState;
 import icyllis.modernui.mc.text.TextSampling;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -35,6 +37,7 @@ public final class TextMarqueeCheck {
     public static void main(String[] args) throws Exception {
         checkVertices();
         checkSampling();
+        checkAtlasSamplingIntegration();
         checkCanvas();
         checkCanvasInjection();
         System.out.println("Text marquee: " + checks + " geometry, sampling, cache and injection checks passed");
@@ -46,7 +49,7 @@ public final class TextMarqueeCheck {
         BakedGlyph[] glyphs = {a, b};
         float[] positions = {0.18f, 0, 4.72f, 0};
         int[] flags = {CharacterStyle.IMPLICIT_COLOR_MASK, CharacterStyle.IMPLICIT_COLOR_MASK};
-        // Exercise both pose translation (GuiGraphicsExtractor) and a fractional
+        // Exercise both pose translation (GuiGraphics) and a fractional
         // draw origin (including the old xAdj/yAdj integration API).
         for (int guiScale : new int[]{1, 2, 3, 4}) {
             for (float scale : new float[]{0.375f, 0.7f, 1, 1.25f}) {
@@ -123,6 +126,65 @@ public final class TextMarqueeCheck {
         check(TextSampling.needsLinear(new Matrix3x2f().rotate(0.1f), 0, 0, 2, 2), "rotation");
     }
 
+    private static void checkAtlasSamplingIntegration() throws Exception {
+        for (boolean requestedLinear : new boolean[]{false, true}) {
+            check(ModernFontAtlas.minFilterFor(Engine.MASK_FORMAT_A8, requestedLinear) == FilterMode.LINEAR,
+                    "all outline/SDF atlas minification remains linear");
+        }
+        check(ModernFontAtlas.magFilterFor(Engine.MASK_FORMAT_A8) == FilterMode.LINEAR,
+                "fractional outline magnification remains linear");
+        check(ModernFontAtlas.minFilterFor(Engine.MASK_FORMAT_ARGB, false) == FilterMode.NEAREST,
+                "bitmap minification remains nearest");
+        check(ModernFontAtlas.minFilterFor(Engine.MASK_FORMAT_ARGB, true) == FilterMode.LINEAR,
+                "emoji minification remains linear");
+        check(ModernFontAtlas.magFilterFor(Engine.MASK_FORMAT_ARGB) == FilterMode.NEAREST,
+                "bitmap/emoji magnification remains nearest");
+
+        // Inspect the compiled production path, not just an isolated filter helper.
+        var atlas = readClass("icyllis/modernui/mc/text/ModernFontAtlas");
+        int textureFilterCalls = 0, policyCalls = 0, allocationPaths = 0;
+        for (var method : atlas.methods) {
+            for (var instruction : method.instructions) {
+                if (!(instruction instanceof MethodInsnNode call)) continue;
+                if (method.name.equals("createTexture")) {
+                    if (call.owner.equals(atlas.name) &&
+                            (call.name.equals("minFilterFor") || call.name.equals("magFilterFor"))) policyCalls++;
+                    if (call.owner.equals("com/mojang/blaze3d/textures/GpuTexture") &&
+                            call.name.equals("setTextureFilter") && call.desc.equals(
+                            "(Lcom/mojang/blaze3d/textures/FilterMode;Lcom/mojang/blaze3d/textures/FilterMode;Z)V")) {
+                        textureFilterCalls++;
+                    }
+                }
+                if (method.name.equals("resize") && call.owner.equals(atlas.name) &&
+                        call.name.equals("createTexture")) allocationPaths++;
+            }
+        }
+        check(policyCalls == 2 && textureFilterCalls == 1,
+                "production texture allocation applies both atlas filter policies");
+        check(allocationPaths == 2, "initial allocation and growth both apply atlas filtering");
+        for (String name : new String[]{"ModernPreparedText", "TextRenderType"}) {
+            var cls = readClass("icyllis/modernui/mc/text/" + name);
+            for (var method : cls.methods) {
+                for (var instruction : method.instructions) {
+                    if (instruction instanceof MethodInsnNode call) {
+                        check(!(call.owner.equals("com/mojang/blaze3d/textures/GpuTexture") &&
+                                        call.name.equals("setTextureFilter")),
+                                "shared atlas filtering is never changed by a draw run");
+                    }
+                }
+            }
+        }
+    }
+
+    private static ClassNode readClass(String name) throws Exception {
+        var node = new ClassNode();
+        try (var in = TextMarqueeCheck.class.getResourceAsStream("/" + name + ".class")) {
+            if (in == null) throw new AssertionError("Missing " + name);
+            new ClassReader(in).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        }
+        return node;
+    }
+
     private static void checkCanvas() {
         var font = new Font();
         font.setTypeface(new Typeface_JDK(new java.awt.Font("Dialog", java.awt.Font.PLAIN, 12)));
@@ -189,7 +251,7 @@ public final class TextMarqueeCheck {
         }
         check(sites == 1, "exactly one Canvas translation injection site");
         var root = Path.of(System.getProperty("modernui.projectRoot"));
-        for (String loader : new String[]{"fabric", "forge", "neoforge"}) {
+        for (String loader : new String[]{"fabric", "neoforge"}) {
             check(Files.readString(root.resolve(loader + "/src/main/resources/mixins.modernui-" + loader + ".json"))
                     .contains("\"MixinGraniteText\""), "Canvas mixin registered for " + loader);
         }

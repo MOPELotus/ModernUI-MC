@@ -25,13 +25,13 @@ license="LGPL-3.0-or-later"
 [[dependencies.modernui]]
     modId="neoforge"
     type="required"
-    versionRange="[26.2.0.0-beta,)"
+    versionRange="[21.9.16-beta,21.10)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.modernui]]
     modId="minecraft"
     type="required"
-    versionRange="[26.2, 26.3)"
+    versionRange="[1.21.9, 1.21.10)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.modernui]]

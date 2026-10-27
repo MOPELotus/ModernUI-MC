@@ -26,7 +26,7 @@ import net.minecraft.client.gui.font.*;
 import net.minecraft.client.gui.font.glyphs.*;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -78,7 +78,7 @@ public class StandardFontSet extends FontSet {
     };
 
     public StandardFontSet(@Nonnull TextureManager texMgr,
-                           @Nonnull Identifier fontName) {
+                           @Nonnull ResourceLocation fontName) {
         super(new GlyphStitcher(texMgr, fontName));
 
         mStandardPaint.setFontStyle(FontPaint.NORMAL);
@@ -130,7 +130,7 @@ public class StandardFontSet extends FontSet {
                     float left = (float) glyph.x / TextLayoutEngine.BITMAP_SCALE;
                     float right = left + (float) glyph.width / TextLayoutEngine.BITMAP_SCALE;
                     float down = up + (float) glyph.height / TextLayoutEngine.BITMAP_SCALE;
-                    Identifier textureName = bitmapFont.getCurrentTextureName();
+                    ResourceLocation textureName = bitmapFont.getCurrentTextureName();
                     return new BakedSheetGlyph(
                             info,
                             new GlyphRenderTypes(
@@ -272,7 +272,7 @@ public class StandardFontSet extends FontSet {
 
         @Nullable
         @Override
-        public TextRenderable.Styled createGlyph(float x, float y, int color, int shadowColor,
+        public TextRenderable createGlyph(float x, float y, int color, int shadowColor,
                                                  @Nonnull Style style, float boldOffset, float shadowOffset) {
             return null;
         }

@@ -19,27 +19,21 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import icyllis.arc3d.core.Rect2f;
 import icyllis.modernui.mc.GradientRectangleRenderState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.gui.GlyphRenderState;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.gui.render.state.GlyphRenderState;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2f;
-import org.joml.Matrix3x2fc;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -232,10 +226,6 @@ public class ModernPreparedText implements Font.PreparedText {
                     textRuns.getLast().glyphEnd = i;
                 }
                 textRuns.add(new TextRun(pipeline, texture.getTextureView(),
-                        // setup bilinear sampler for SDF text
-                        mode == TextRenderType.MODE_SDF_FILL
-                                ? RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR)
-                                : texture.getSampler(),
                         i, isColorEmoji, isBitmapFont,
                         preferredMode == TextRenderType.MODE_NORMAL));
             }
@@ -294,8 +284,8 @@ public class ModernPreparedText implements Font.PreparedText {
     @Deprecated
     @Override
     public void visit(@Nonnull Font.GlyphVisitor glyphVisitor) {
-        if (bounds != null) {
-            glyphVisitor.acceptEmptyArea(new EmptyArea(bounds.left(), bounds.top(), bounds.width(), 7, bounds.height(), Style.EMPTY));
+        for (TextRenderable renderable : customRenderables) {
+            glyphVisitor.acceptGlyph(renderable);
         }
     }
 
@@ -306,10 +296,8 @@ public class ModernPreparedText implements Font.PreparedText {
     }
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
-    public void submitRuns(GuiRenderState renderState, Matrix3x2fc pose,
+    public void submitRuns(GuiRenderState renderState, Matrix3x2f pose,
                            @Nullable ScreenRectangle scissor) {
-        boolean linearSampling = TextSampling.needsLinear(pose, this.x, this.top,
-                density, Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale);
         float x = this.x;
         float top = this.top;
         if (xAdj != 0 || yAdj != 0) {
@@ -322,7 +310,7 @@ public class ModernPreparedText implements Font.PreparedText {
         }
         if ((bgColor & 0xFF000000) != 0) {
             // this is only used by CartographyTableScreen, emit as normal fills
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new GradientRectangleRenderState(
                             RenderPipelines.GUI,
                             TextureSetup.noTexture(),
@@ -335,19 +323,16 @@ public class ModernPreparedText implements Font.PreparedText {
             );
         }
         for (int i = 0; i < customRenderables.size(); i++) {
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new GlyphRenderState(pose, customRenderables.get(i), scissor)
             );
         }
         // For-index is 2x faster than enhanced-for
         for (int i = 0; i < runs.size(); i++) {
             var run = runs.get(i);
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new TextRunRenderState(pose, run.pipeline,
-                            TextureSetup.singleTextureWithLightmap(run.textureView,
-                                    linearSampling && run.isDirectMask && !run.isColorEmoji && !run.isBitmapFont
-                                            ? RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)
-                                            : run.sampler),
+                            TextureSetup.singleTextureWithLightmap(run.textureView),
                             scissor,
                             x, top, color, dropShadow,
                             glyphs, positions, flags,
@@ -357,7 +342,7 @@ public class ModernPreparedText implements Font.PreparedText {
             );
         }
         if (hasEffect) {
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new TextEffectRenderState(pose,
                             scissor,
                             x, top, color, dropShadow,
@@ -374,18 +359,16 @@ public class ModernPreparedText implements Font.PreparedText {
 
         public final RenderPipeline pipeline;
         public final GpuTextureView textureView;
-        public final GpuSampler sampler;
         public final int glyphStart;
         public int glyphEnd;
         public final boolean isColorEmoji;
         public final boolean isBitmapFont;
         public final boolean isDirectMask;
 
-        public TextRun(RenderPipeline pipeline, GpuTextureView textureView, GpuSampler sampler,
+        public TextRun(RenderPipeline pipeline, GpuTextureView textureView,
                        int glyphStart, boolean isColorEmoji, boolean isBitmapFont, boolean isDirectMask) {
             this.pipeline = pipeline;
             this.textureView = textureView;
-            this.sampler = sampler;
             this.glyphStart = glyphStart;
             this.isColorEmoji = isColorEmoji;
             this.isBitmapFont = isBitmapFont;

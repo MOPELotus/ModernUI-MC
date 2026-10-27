@@ -19,9 +19,9 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.util.LightCoordsUtil;
-import org.joml.Matrix3x2fc;
-import org.joml.Matrix4fc;
+import net.minecraft.client.renderer.LightTexture;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
 
@@ -87,29 +87,29 @@ public class TextRenderEffect {
     private TextRenderEffect() {
     }
 
-    public static void drawUnderline(@Nonnull Matrix3x2fc pose, @Nonnull VertexConsumer builder,
+    public static void drawUnderline(@Nonnull Matrix3x2f pose, @Nonnull VertexConsumer builder,
                                      float start, float end, float baseline,
                                      int r, int g, int b, int a) {
         baseline += UNDERLINE_OFFSET;
         builder.addVertexWith2DPose(pose, start, baseline + UNDERLINE_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U0, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline + UNDERLINE_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U1, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U1, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, start, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U0, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
     }
 
-    public static void drawUnderline(@Nonnull Matrix4fc matrix, @Nonnull VertexConsumer builder,
+    public static void drawUnderline(@Nonnull Matrix4f matrix, @Nonnull VertexConsumer builder,
                                      float start, float end, float baseline,
                                      int r, int g, int b, int a, int light) {
         baseline += UNDERLINE_OFFSET;
@@ -131,29 +131,29 @@ public class TextRenderEffect {
                 .setLight(light);
     }
 
-    public static void drawStrikethrough(@Nonnull Matrix3x2fc pose, @Nonnull VertexConsumer builder,
+    public static void drawStrikethrough(@Nonnull Matrix3x2f pose, @Nonnull VertexConsumer builder,
                                          float start, float end, float baseline,
                                          int r, int g, int b, int a) {
         baseline += STRIKETHROUGH_OFFSET;
         builder.addVertexWith2DPose(pose, start, baseline + STRIKETHROUGH_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U0, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline + STRIKETHROUGH_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U1, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U1, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, start, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U0, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
     }
 
-    public static void drawStrikethrough(@Nonnull Matrix4fc matrix, @Nonnull VertexConsumer builder,
+    public static void drawStrikethrough(@Nonnull Matrix4f matrix, @Nonnull VertexConsumer builder,
                                          float start, float end, float baseline,
                                          int r, int g, int b, int a, int light) {
         baseline += STRIKETHROUGH_OFFSET;

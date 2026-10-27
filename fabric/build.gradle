@@ -1,7 +1,7 @@
-import net.fabricmc.loom.build.nesting.NestableJarGenerationTask
+import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
-    id 'org.relativitymc.neo-loom'
+    id 'dev.architectury.loom'
     //id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'com.gradleup.shadow'
 }
@@ -13,7 +13,7 @@ configurations {
 }
 
 loom {
-    accessWidenerPath = project(":common").file("src/main/resources/modernui.classtweaker")
+    accessWidenerPath = project(":common").file("src/main/resources/modernui.accesswidener")
     runConfigs.each { it.setIdeConfigGenerated(true) } // Uncomment this if run configs not generated
 }
 
@@ -41,11 +41,13 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modCompileOnly "maven.modrinth:vulkanmod:${vulkanmod_version}"
 
-    implementation "net.fabricmc:fabric-loader:0.19.3"
-    api "net.fabricmc.fabric-api:fabric-api:0.153.0+26.2"
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modApi "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-    implementation "com.terraformersmc:modmenu:18.0.0-beta.1"
+    modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
 
     implementation project(':common')
 
@@ -75,8 +77,8 @@ dependencies {
         transitive = false
     }
 
-    compileOnly("org.lwjgl:lwjgl-vulkan:3.4.1")
-    testCompileOnly("org.lwjgl:lwjgl-vulkan:3.4.1")
+    compileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
+    testCompileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
 
     //implementation("com.vladsch.flexmark:flexmark:${flexmark_version}")
 
@@ -116,17 +118,9 @@ test {
     failOnNoDiscoveredTests = false
 }
 
-loom.nestJars(
-        tasks.named("shadowJar", Jar),
-        objects.fileCollection().from(
-                tasks.named("processIncludeJars", NestableJarGenerationTask).map {
-                    objects.fileTree().from(it.outputDirectory)
-                }
-        )
-)
 
 shadowJar {
-    archiveClassifier.set(rootProject.fontVariant == "misans" ? "universal-misans" : "universal")
+    archiveClassifier.set("shadow")
     configurations = [project.configurations.shadow]
 
     /*dependencies {
@@ -151,20 +145,11 @@ shadowJar {
     exclude 'META-INF/maven/**'*/
 }
 
-/*remapJar {
+remapJar {
     dependsOn(shadowJar)
     inputFile.set(shadowJar.archiveFile)
-    archiveClassifier.set("universal")
+    archiveClassifier.set(rootProject.fontVariant == "misans" ? "universal-misans" : "universal")
 }
-
-tasks.register('remapMavenJar', RemapJarTask) {
-    dependsOn(jar)
-    inputFile.set(jar.archiveFile)
-    addNestedDependencies = false
-    *//*targetNamespace.set("srg") // to srg names
-    remapAccessWidener.set(true)*//*
-    archiveClassifier.set("maven")
-}*/
 
 tasks.register('mavenJar', Jar) {
     dependsOn(jar)

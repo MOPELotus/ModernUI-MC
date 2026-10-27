@@ -23,14 +23,14 @@ public final class MiSansSetup extends Fragment {
         checked = true;
     }
     public static void tick(Minecraft mc) {
-        if (!required || mc.gui.overlay() != null) return;
+        if (!required || mc.getOverlay() != null) return;
         if (screen == null) {
             screen = new SimpleScreen(new MiSansSetup(), null, null, Component.literal("安装 MiSans")) {
                 @Override public void onClose() {}
                 @Override public void onBackPressed() {}
             };
         }
-        if (mc.gui.screen() != screen) mc.gui.setScreen(screen);
+        if (mc.screen != screen) mc.setScreen(screen);
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, DataSet state) {
@@ -52,7 +52,7 @@ public final class MiSansSetup extends Fragment {
         layout.addView(status);
         Button license = new Button(ctx);
         license.setText("查看 MiSans 许可协议");
-        license.setOnClickListener(v -> net.minecraft.util.Util.getPlatform().openUri(MiSansInstaller.LICENSE_PAGE));
+        license.setOnClickListener(v -> net.minecraft.Util.getPlatform().openUri(MiSansInstaller.LICENSE_PAGE));
         layout.addView(license);
         Button download = new Button(ctx);
         download.setText("下载");

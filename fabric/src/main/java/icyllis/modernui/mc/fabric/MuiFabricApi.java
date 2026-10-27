@@ -25,17 +25,20 @@ import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.mc.mixin.AccessGameRenderer;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Rarity;
+
+import javax.annotation.Nullable;
 
 public final class MuiFabricApi extends MuiModApi {
 
@@ -44,7 +47,7 @@ public final class MuiFabricApi extends MuiModApi {
     }
 
     @Override
-    public void loadEffect(GameRenderer gr, Identifier effect) {
+    public void loadEffect(GameRenderer gr, ResourceLocation effect) {
         ((AccessGameRenderer) gr).invokeSetPostEffect(effect);
     }
 
@@ -78,21 +81,21 @@ public final class MuiFabricApi extends MuiModApi {
     }
 
     @Override
-    public void submitGuiElementRenderState(GuiGraphicsExtractor graphics, GuiElementRenderState renderState) {
-        graphics.guiRenderState.addGuiElement(renderState);
+    public void submitGuiElementRenderState(GuiGraphics graphics, GuiElementRenderState renderState) {
+        graphics.guiRenderState.submitGuiElement(renderState);
     }
 
     @Override
-    public void submitPictureInPictureRenderState(GuiGraphicsExtractor graphics, PictureInPictureRenderState renderState) {
-        graphics.guiRenderState.addPicturesInPictureState(renderState);
+    public void submitPictureInPictureRenderState(GuiGraphics graphics, PictureInPictureRenderState renderState) {
+        graphics.guiRenderState.submitPicturesInPictureState(renderState);
     }
 
     @Override
-    public ScreenRectangle peekScissorStack(GuiGraphicsExtractor graphics) {
+    public ScreenRectangle peekScissorStack(GuiGraphics graphics) {
         return graphics.scissorStack.peek();
     }
 
-    /*@Override
+    @Override
     public RenderType createRenderType(String name, int bufferSize,
                                        boolean affectsCrumbling, boolean sortOnUpload,
                                        RenderPipeline renderPipeline,
@@ -109,10 +112,6 @@ public final class MuiFabricApi extends MuiModApi {
                 name, bufferSize, affectsCrumbling, sortOnUpload, renderPipeline,
                 builder.createCompositeState(false)
         );
-    }*/
-
-    @Override
-    public RenderType createRenderType(String name, RenderSetup allState) {
-        return RenderType.create(name, allState);
     }
+
 }

@@ -64,7 +64,7 @@ import icyllis.modernui.view.ViewGroup;
 import icyllis.modernui.widget.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1040,7 +1040,7 @@ public class PreferencesFragment extends Fragment {
                     // ensure it's applied
                     if ((int) minecraft.getWindow().getGuiScale() !=
                             minecraft.getWindow().calculateScale(newValue, false)) {
-                        minecraft.resizeGui();
+                        minecraft.resizeDisplay();
                     }
                     minecraft.options.save();
                 });

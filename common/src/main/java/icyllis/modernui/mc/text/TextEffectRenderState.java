@@ -19,20 +19,18 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import org.joml.Matrix3x2fc;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import org.joml.Matrix3x2f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public record TextEffectRenderState(
-        Matrix3x2fc pose,
+        Matrix3x2f pose,
         @Nullable ScreenRectangle scissorArea,
         float x, float top, int color, boolean dropShadow,
         float[] positions, int[] flags,
@@ -109,8 +107,7 @@ public record TextEffectRenderState(
         var placeholder = GlyphManager.getInstance().getEffectGlyph().createEffect(
                 x, top, x + totalAdvance, top + 9, 0, ~0, 0, 0
         );
-        return TextureSetup.singleTextureWithLightmap(placeholder.textureView(),
-                RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+        return TextureSetup.singleTextureWithLightmap(placeholder.textureView());
     }
 
     @Nullable

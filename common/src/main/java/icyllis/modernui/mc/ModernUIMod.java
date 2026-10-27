@@ -19,7 +19,7 @@
 package icyllis.modernui.mc;
 
 import icyllis.modernui.ModernUI;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.*;
 
 import javax.annotation.Nonnull;
@@ -43,6 +43,7 @@ public abstract class ModernUIMod {
     protected static boolean sOptiFineLoaded;
     protected static boolean sIrisApiLoaded;
     protected static volatile boolean sVulkanBackend;
+    protected static volatile boolean sVulkanModLoaded;
     protected static volatile boolean sLegendaryTooltipsLoaded;
     protected static volatile boolean sUntranslatedItemsLoaded;
 
@@ -69,8 +70,8 @@ public abstract class ModernUIMod {
     }
 
     @Nonnull
-    public static Identifier location(String path) {
-        return Identifier.fromNamespaceAndPath(ModernUI.ID, path);
+    public static ResourceLocation location(String path) {
+        return ResourceLocation.fromNamespaceAndPath(ModernUI.ID, path);
     }
 
     public static boolean isOptiFineLoaded() {
@@ -83,11 +84,11 @@ public abstract class ModernUIMod {
 
     @Deprecated(forRemoval = false)
     public static boolean isVulkanModLoaded() {
-        return isVulkanBackend();
+        return sVulkanModLoaded;
     }
 
     public static boolean isVulkanBackend() {
-        return sVulkanBackend;
+        return sVulkanBackend || sVulkanModLoaded;
     }
 
     public static void setVulkanBackend(boolean vulkanBackend) {

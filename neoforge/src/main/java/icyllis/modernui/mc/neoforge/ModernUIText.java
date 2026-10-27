@@ -48,7 +48,7 @@ public final class ModernUIText {
     }
 
     /*@SubscribeEvent
-    static void registerResourceListener(@Nonnull RegisterClientReloadListenersEvent event) {
+    static void registerResourceListener(@Nonnull AddClientReloadListenersEvent event) {
         // language may reload, cause TranslatableComponent changed, so clear layout cache
         event.registerReloadListener(TextLayoutEngine.getInstance()::reload);
         LOGGER.debug(MARKER, "Registered language reload listener");
