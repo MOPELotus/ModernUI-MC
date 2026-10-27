@@ -8,11 +8,16 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /** Runs without a client or GPU; examines the actual compiled edition, not source text. */
 public final class FontVariantCheck {
@@ -29,6 +34,7 @@ public final class FontVariantCheck {
         require(!FontDefaults.isMiSansFontFamily("Inter Frozen Medium"), "ordinary font must not be MiSans");
         require(FontDefaults.createWeightedFontFileNames("MiSans", 510).getFirst().equals("MiSans-Medium.ttf"),
                 "MiSans weight mapping");
+        checkOfficialMiSansWeightPresets();
         require(FontDefaults.isLegacyMiSansProfile("MiSans", List.of("MiSans L3", "MiSans Latin", "MiSans TC"),
                 List.of("config/ModernUI/fonts")), "recognize old forced profile");
         require(!FontDefaults.isLegacyMiSansProfile("MiSans", List.of("My Custom Font"),
@@ -78,6 +84,69 @@ public final class FontVariantCheck {
         require(calls(preferences, "icyllis/modernui/mc/ui/PreferredFontAccordion", "<init>") != misans,
                 "preferred font picker visibility");
         System.out.println("PASS: " + FontVariant.NAME + " defaults, configuration migration and compiled font/UI boundaries");
+    }
+
+    private record OfficialFont(String fileName, String family, String style, int os2Weight,
+                                String sha256, String sourceArchive) {}
+
+    private static void checkOfficialMiSansWeightPresets() throws Exception {
+        Map<String, OfficialFont> fonts = new LinkedHashMap<>();
+        String resource = "icyllis/modernui/mc/test/misans-official-metadata.tsv";
+        try (var input = FontVariantCheck.class.getClassLoader().getResourceAsStream(resource)) {
+            require(input != null, "missing official MiSans metadata fixture");
+            try (var reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                for (String line; (line = reader.readLine()) != null;) {
+                    if (line.isBlank() || line.startsWith("#")) continue;
+                    String[] fields = line.split("\t", -1);
+                    require(fields.length == 6, "invalid official MiSans metadata row");
+                    var font = new OfficialFont(fields[0], fields[1], fields[2], Integer.parseInt(fields[3]),
+                            fields[4], fields[5]);
+                    require(font.sha256.matches("[0-9a-f]{64}"), "official font SHA-256");
+                    require(font.sourceArchive.startsWith("https://hyperos.mi.com/font-download/"),
+                            "official font source archive");
+                    require(fonts.put(font.fileName, font) == null, "duplicate official font metadata");
+                }
+            }
+        }
+        require(fonts.size() == 28, "four official packages contain 28 required static fonts");
+        String[] styles = {"Thin", "ExtraLight", "Light", "Regular", "Medium", "Demibold", "Semibold", "Bold", "Heavy"};
+        int[] os2Weights = {150, 200, 250, 330, 380, 450, 520, 630, 700};
+        for (String family : List.of("MiSans", "MiSans Latin", "MiSans TC")) {
+            List<OfficialFont> presets = new ArrayList<>();
+            for (int i = 0; i < styles.length; i++) {
+                String fileName = FontDefaults.createWeightedFontFileNames(family, (i + 1) * 100).getFirst();
+                OfficialFont font = fonts.get(fileName);
+                require(font != null, "configured preset must select an actual official file: " + fileName);
+                require(font.family.equals(family), "official family identity: " + fileName);
+                require(font.style.equals(styles[i]), "official style for preset " + ((i + 1) * 100));
+                require(font.os2Weight == os2Weights[i], "official OS/2 weight: " + fileName);
+                presets.add(font);
+            }
+            requireIncreasingWeights(presets);
+            // The previous 600=Semibold, 700=Demibold mapping must fail against
+            // the real metadata, independently of the preset's nominal numbers.
+            List<OfficialFont> oldOrder = new ArrayList<>(presets);
+            oldOrder.set(5, presets.get(6));
+            oldOrder.set(6, presets.get(5));
+            boolean rejected = false;
+            try {
+                requireIncreasingWeights(oldOrder);
+            } catch (AssertionError expected) {
+                rejected = true;
+            }
+            require(rejected, "old 600/700 reversed weight mapping must be rejected: " + family);
+        }
+        OfficialFont l3 = fonts.get("MiSans L3.ttf");
+        require(l3 != null && l3.family.equals("MiSans L3") && l3.style.equals("Regular") && l3.os2Weight == 400,
+                "L3 remains an independent regular fallback");
+    }
+
+    private static void requireIncreasingWeights(List<OfficialFont> presets) {
+        int previous = 0;
+        for (OfficialFont font : presets) {
+            require(font.os2Weight > previous, "MiSans preset weights must increase: " + font.fileName);
+            previous = font.os2Weight;
+        }
     }
 
     private static ClassNode read(String name) throws Exception {
