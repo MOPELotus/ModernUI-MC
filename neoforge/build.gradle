@@ -50,15 +50,16 @@ dependencies {
     mappings loom.officialMojangMappings()
     compileOnly "maven.modrinth:vulkanmod-reforged:KggbdG7c"
     testCompileOnly "maven.modrinth:vulkanmod-reforged:KggbdG7c"
+    testImplementation 'org.ow2.asm:asm-tree:9.8'
+    testImplementation "org.lwjgl:lwjgl-vulkan:${lwjgl_version}"
     neoForge "net.neoforged:neoforge:${neoforge_version}"
 
     implementation project(':common')
 
-    ["dev.icyllis:arc3d-compiler"].each {
-        implementation(it + ":${arc3d_version}")
-        include(it + ":${arc3d_version}")
-    }
-    ["dev.icyllis:arc3d-core",
+    // Compiler targets MixinSPIRVCodeGenerator; a plain JarJar library is loaded
+    // by FML's plugin URLClassLoader and bypasses game class transformation.
+    ["dev.icyllis:arc3d-compiler",
+     "dev.icyllis:arc3d-core",
      "dev.icyllis:arc3d-sketch",
      "dev.icyllis:arc3d-engine",
      "dev.icyllis:arc3d-granite",
@@ -123,10 +124,42 @@ test {
     failOnNoDiscoveredTests = false
 }
 
+tasks.register('checkVulkanUploadBarrier', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.VulkanUploadBarrierCheck'
+    doFirst {
+        def jars = configurations.compileClasspath.files.findAll {
+            it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod-reforged') && it.name.endsWith('.jar')
+        }
+        if (jars.empty) throw new GradleException('Missing actual VulkanMod Reforged API JAR')
+        setArgs(jars.collect { it.absolutePath })
+    }
+}
+check.dependsOn checkVulkanUploadBarrier
+
+tasks.register('checkVulkanGlobalUniform', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.VulkanGlobalUniformCheck'
+    doFirst {
+        def jars = configurations.compileClasspath.files.findAll {
+            it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod-reforged') && it.name.endsWith('.jar')
+        }
+        if (jars.empty) throw new GradleException('Missing actual VulkanMod Reforged API JAR')
+        setArgs(jars.collect { it.absolutePath })
+    }
+}
+check.dependsOn checkVulkanGlobalUniform
+
 
 shadowJar {
     archiveClassifier.set("shadow")
     configurations = [project.configurations.shadow]
+    // All shaded libraries belong to the Modern UI game module.
+    exclude 'module-info.class', 'META-INF/versions/**/module-info.class'
 
     /*dependencies {
         exclude 'icu4j-59.1.jar'

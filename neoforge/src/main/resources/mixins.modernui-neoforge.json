@@ -30,8 +30,15 @@
     "MixinStringSplitter",
     "MixinTextFieldHelper",
     "MixinVulkanDeviceManager",
+    "MixinVulkanCommandEncoder",
     "MixinVulkanImage",
     "MixinVulkanRenderer",
+    "MixinVulkanUploadManager",
+    "MixinGpuBufferPoolAddress",
+    "MixinParcelBufferFree",
+    "MixinVulkanBindingBufferFree",
+    "MixinVulkanLongBufferFree",
+    "MixinWindowsWindowBorderAbi",
     "MixinWindow"
   ]
 }
