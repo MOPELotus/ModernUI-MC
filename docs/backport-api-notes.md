@@ -57,6 +57,14 @@ Fabric VulkanMod 的 acquire 调用位于 `beginFrame()`，NeoForge Reforged 位
 
 兼容层按实际 acquire 成功或 SUBOPTIMAL 的 semaphore 信号跟踪等待状态，补齐 resize/flush 提交缺失的等待，避免重复消费二进制 semaphore；失败提交保留信号，同步对象销毁时清理旧生命周期。`checkVulkanAcquire` 同时检查状态机、真实 Mixin `SELECT_MEMBER` 规则和实际发行 JAR 的 acquire/submit/销毁入口，包含 Neo 裸方法名漏选的负对照。
 
+## Neo 编译器类加载与 LWJGL ABI
+
+NeoForge 将没有游戏库标记的 JarJar 依赖放入 FML Plugins 类加载器，该路径不应用游戏 Mixin。Arc 编译器现与其余 Arc 模块一起 shadow 到 Modern UI 主模组；成品检查核验 compiler 目标和三个 shader 资源位于顶层，拒绝嵌套重复副本及模块描述符污染。
+
+Minecraft 使用的 LWJGL 3.3.3 没有当前 Arc/Core 字节码引用的部分新重载。兼容 Mixin 将 Byte/Int/LongBuffer 的释放及 ByteBuffer 基地址调用显式转到既有 `Buffer` 接口，保留分配器和 position 语义；Windows 窗口接口保留参数顺序，仅在原有错误输出参数为 null 时转到旧签名。`checkLwjglAbi` 检查真实消费者调用点，实际分配/释放原生缓冲区并验证基地址；Windows 边界只运行参数 stub 检查，不代表 Windows 实机验收。
+
+NeoForge 1.21.11 的 Reforged 另有两项专用检查：`checkVulkanUploadBarrier` 核验 concurrent buffer 的队列族索引，`checkVulkanGlobalUniform` 核验 Global Settings UBO 稳定进入 graphics 上传路径的条件和帧重入保护。这两项在 `:ModernUI-NeoForge:` 下，仍需物理显卡验证实际队列与生命周期。
+
 ## 检查入口
 
 在对应版本分支执行：
@@ -79,6 +87,7 @@ Fabric VulkanMod 的 acquire 调用位于 `beginFrame()`，NeoForge Reforged 位
 | `checkVulkanDepthBarrier` | Vulkan 深度同步修复与目标 VulkanMod 字节码入口 |
 | `checkVulkanSurface` | Vulkan present 支持判定与目标 VulkanMod 字节码入口 |
 | `checkVulkanAcquire` | acquire 信号所有权、真实 Mixin 重载选择和提交等待入口 |
+| `checkLwjglAbi` | 真实 LWJGL 方法链接、原生缓冲区语义与窗口参数兼容 |
 | `checkFontVariant` | 标准版与 MiSans 版默认配置及编译边界 |
 
 这些任务通过不代表物理显卡、窗口、tooltip 显示或输入体验已经验收通过。
