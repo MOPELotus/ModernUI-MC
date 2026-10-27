@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Validate every published loader/edition pair using the final, shaded JARs."""
+import io
 import json
 from pathlib import Path
 import re
@@ -46,6 +47,33 @@ for loader in loaders:
                 assert f'icyllis/modernui/mc/{cls}.class' in entries, (name, cls)
             assert jar.read('icyllis/modernui/mc/FontVariant.class').find(
                     f'client-{variant}.toml'.encode()) >= 0, name
+            mixins = json.loads(jar.read(f'mixins.modernui-{loader}.json'))
+            for mixin in ('MixinSPIRVCodeGenerator', 'MixinVulkanDeviceManager',
+                          'MixinVulkanImage', 'MixinVulkanRenderer',
+                          'MixinGpuBufferPoolAddress', 'MixinParcelBufferFree',
+                          'MixinVulkanBindingBufferFree', 'MixinVulkanLongBufferFree',
+                          'MixinWindowsWindowBorderAbi'):
+                assert mixin in mixins['client'], (name, 'unregistered compatibility Mixin', mixin)
+                assert f'icyllis/modernui/mc/mixin/{mixin}.class' in entries, (name, mixin)
+            if loader == 'neoforge':
+                # These Mixin targets must load through FML's transforming game
+                # classloader. Plain nested compiler JARs become plugin libraries.
+                for cls in ('compiler/spirv/SPIRVCodeGenerator', 'granite/GraniteDevice'):
+                    assert f'icyllis/arc3d/{cls}.class' in entries, (name, cls)
+                for resource in ('cm_common.aksl', 'cm_glsl_frag.aksl', 'cm_glsl_vert.aksl'):
+                    assert f'icyllis/arc3d/shaders/{resource}' in entries, (name, resource)
+                assert not any(path == 'module-info.class' or
+                               re.fullmatch(r'META-INF/versions/[^/]+/module-info.class', path)
+                               for path in entries), (name, 'shaded module descriptor')
+                metadata = json.loads(jar.read('META-INF/jarjar/metadata.json'))
+                assert not any(item['identifier'] == {
+                    'group': 'dev.icyllis', 'artifact': 'arc3d-compiler'}
+                    for item in metadata['jars']), (name, 'compiler still registered as JarJar library')
+                for path in entries:
+                    if path.endswith('.jar'):
+                        with zipfile.ZipFile(io.BytesIO(jar.read(path))) as nested:
+                            assert 'icyllis/arc3d/compiler/spirv/SPIRVCodeGenerator.class' not in nested.namelist(), (
+                                name, path, 'duplicate nested compiler target')
         print(f'PASS: {name}')
 actual = {p.name for p in Path(output).glob('*.jar')}
 assert actual == expected, f'missing={expected-actual}, unexpected={actual-expected}'
