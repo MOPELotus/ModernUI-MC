@@ -89,6 +89,11 @@ public final class VulkanModIntegration {
         return backendContext;
     }
 
+    public static void closeContext(Thread uiThread) {
+        VulkanContextLifecycle.close(VulkanManager.get(), uiThread,
+                Core.peekImmediateContext(), Core.peekUiRecordingContext());
+    }
+
     public static void configureShaderCaps() {
         // Arc3D 2026.2 derives this from the physical API version and ignores
         // mMaxAPIVersion. VulkanMod's Vulkan 1.2 device supports SPIR-V 1.5.

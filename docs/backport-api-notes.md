@@ -65,6 +65,14 @@ Minecraft 使用的 LWJGL 3.3.3 没有当前 Arc/Core 字节码引用的部分�
 
 NeoForge 1.21.11 的 Reforged 另有两项专用检查：`checkVulkanUploadBarrier` 核验 concurrent buffer 的队列族索引，`checkVulkanGlobalUniform` 核验 Global Settings UBO 稳定进入 graphics 上传路径的条件和帧重入保护。这两项在 `:ModernUI-NeoForge:` 下，仍需物理显卡验证实际队列与生命周期。
 
+## Vulkan 退出与连续纹理写入
+
+桥接层在 UI 线程退出、两个 Arc context 引用归零后关闭自身 VulkanManager 的分配器和 feature 结构，并拒绝拥有外部 device 或 instance 的 manager。VulkanMod 的图形设备登记自身创建的 Java buffer/texture wrapper，正常 close 时移除；设备关闭时补完剩余 wrapper 和旧版 cloud buffer 的正常释放。管线清理仅遍历实际登记的剩余 Pipeline owner，放在原有延迟释放排空之后，避免重复销毁。
+
+VkCommandEncoder 构造时将其 scratch framebuffer 的所有者登记到传入的实际设备；关闭时调用既有 `cleanUp(false)`，只释放 framebuffer/render pass，保留借用的纹理附件。
+
+相同 TRANSFER_DST 布局下的连续纹理上传仍然需要写后写依赖。兼容 Mixin 仅在重复上传布局时补 TRANSFER_WRITE 到 TRANSFER_WRITE 的屏障，保留图像、完整 mip/layer 范围及队列族 IGNORE 语义。以下检查运行真实目标 JAR 和产品 handler 的 CPU 边界验证，仍需物理显卡验证退出与首次上传。
+
 ## 检查入口
 
 在对应版本分支执行：
@@ -88,6 +96,11 @@ NeoForge 1.21.11 的 Reforged 另有两项专用检查：`checkVulkanUploadBarri
 | `checkVulkanSurface` | Vulkan present 支持判定与目标 VulkanMod 字节码入口 |
 | `checkVulkanAcquire` | acquire 信号所有权、真实 Mixin 重载选择和提交等待入口 |
 | `checkLwjglAbi` | 真实 LWJGL 方法链接、原生缓冲区语义与窗口参数兼容 |
+| `checkVulkanContextLifecycle` | 真实 manager 的桥接分配器所有权、活 context/线程与外部设备保护 |
+| `checkVulkanGpuOwnership` | 真实设备创建/关闭入口、wrapper 隔离与重复关闭 |
+| `checkVulkanPipelineLifecycle` | 实际管线 owner 登记、延迟清理后唯一释放 |
+| `checkVulkanImageUploadBarrier` | 实际连续上传负对照、写屏障 native 字段和子资源范围 |
+| `checkVulkanEncoderOwnership` | 真实 encoder 构造参数、scratch framebuffer 所有权及借用附件保护 |
 | `checkFontVariant` | 标准版与 MiSans 版默认配置及编译边界 |
 
 这些任务通过不代表物理显卡、窗口、tooltip 显示或输入体验已经验收通过。
