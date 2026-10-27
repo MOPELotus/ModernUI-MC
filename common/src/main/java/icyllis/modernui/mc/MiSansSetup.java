@@ -23,7 +23,9 @@ public final class MiSansSetup extends Fragment {
         checked = true;
     }
     public static void tick(Minecraft mc) {
-        if (!required || mc.getOverlay() != null) return;
+        // Disconnect renders a final progress frame after the UI has shut down.
+        // Do not replace that screen with a fragment that has already finished.
+        if (!required || !mc.isRunning() || mc.getOverlay() != null) return;
         if (screen == null) {
             screen = new SimpleScreen(new MiSansSetup(), null, null, Component.literal("安装 MiSans")) {
                 @Override public void onClose() {}
@@ -44,6 +46,7 @@ public final class MiSansSetup extends Fragment {
         title.setText("安装 MiSans 字体");
         title.setTextSize(26);
         title.setTextColor(0xffeeeeee);
+        title.setGravity(Gravity.CENTER);
         layout.addView(title);
         TextView status = new TextView(ctx);
         status.setText("缺少所需字体，请下载后重启客户端。\n将从小米官网下载四套字体，安装期间请勿关闭游戏。\n点击“下载”即表示同意 MiSans 字体知识产权许可协议。\n临时显示字体：思源黑体（SIL OFL）。");
