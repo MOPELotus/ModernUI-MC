@@ -1,0 +1,31 @@
+# Official Xiaomi static-font metadata observed from the authorized installer download on 2026-10-27 UTC.
+# Columns: filename, typographic family (or legacy family), typographic subfamily (or legacy subfamily), OS/2 usWeightClass, SHA-256, source archive URL.
+# Metadata only: no font files, license PDF, user records, or local paths are included.
+MiSans-Thin.ttf	MiSans	Thin	150	d2fd126697ad941ab33977de3ec6bfba3324c1d9c52f7f4105b665630bec0cbe	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-ExtraLight.ttf	MiSans	ExtraLight	200	319cfec6bb7ba04603ce68af95fbbe0dcdbbf415c26ec66bfd000c354cb51e5b	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Light.ttf	MiSans	Light	250	5c306154f81ca5888cd517c16493a9ecc7561deb0b7b449d59fc61e8b41021f0	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Regular.ttf	MiSans	Regular	330	9c120f0a849bc0aa5048daae2a3c0f6eecd828b5b33fce682a9622833f5feea6	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Medium.ttf	MiSans	Medium	380	b03e98374e971594b0b7a9706d0704241f76e1b88556cdda79c5039ef8a638d1	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Semibold.ttf	MiSans	Semibold	520	77c23f31ae124867778344970155a0c8d34a89897dedaab81aeee82ff00a4ce6	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Demibold.ttf	MiSans	Demibold	450	209bc982dda59dc05f6dda1c6145b91dea8fd24a28f903fe7f009313b06dc8e3	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Bold.ttf	MiSans	Bold	630	d0c1d327952ed935e86fb78a97a6c182b44f2c2b08777326786b1f8b26d1fe1e	https://hyperos.mi.com/font-download/MiSans.zip
+MiSans-Heavy.ttf	MiSans	Heavy	700	7e44da09901d804c32be8770cf6ae37e68f63868d6757e1554a26e6ca589aa48	https://hyperos.mi.com/font-download/MiSans.zip
+MiSansLatin-Thin.ttf	MiSans Latin	Thin	150	f99727e142f4fa3d362959d98f4094f4298a57a5c91b4473c297824435db436b	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-ExtraLight.ttf	MiSans Latin	ExtraLight	200	201c0a6fac5f34f68b3f77fc10898cacb3a63367ad351aa78b6542cc3afee654	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Light.ttf	MiSans Latin	Light	250	9e2f98bc1a612ca0d32d239f5a25061f0f342fa064cf7ca7ae4e15f49616bf02	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Regular.ttf	MiSans Latin	Regular	330	d6afa946f09bf876e58ec2f784988a68647af9edb77709643f00fa25f183135b	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Medium.ttf	MiSans Latin	Medium	380	61396677e5921f7e84e0ec7ba4a70b2af769a6fac93d9c3b95dd2d394b884777	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Semibold.ttf	MiSans Latin	Semibold	520	2080f37e783eb269129c15f7f40028943fe659c1859efc5ba5f0de4e726c0e62	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Demibold.ttf	MiSans Latin	Demibold	450	56eda09a603c5ad2113dca8cbcba90a670e9e7618176cb772c55c3836e033443	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Bold.ttf	MiSans Latin	Bold	630	fbf36b678e3c8037261b7d070e209698102ffa411990a9d52b71285589000b5d	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MiSansLatin-Heavy.ttf	MiSans Latin	Heavy	700	e95951d21e905260a558d3087d368da0cf2bfcec638fd6e37dd84ee09f900ddb	https://hyperos.mi.com/font-download/MiSans_Latin.zip
+MisansTC-Thin.ttf	MiSans TC	Thin	150	b26dae7132a590d30e5003d3729ce543ecea1154d643161d9f2c543e03e0ee24	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-ExtraLight.ttf	MiSans TC	ExtraLight	200	76816fc7789c8d04f2cd5693b98403d4feec9d433198818979c032cdc3fe20ac	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Light.ttf	MiSans TC	Light	250	f0f3f5acb0e748d868a383d9afb18e9015efadff3874c62822652f929028cf35	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Regular.ttf	MiSans TC	Regular	330	135c5896a8ba646806853af68ce19893660afc02f708105e927c3591e76e7933	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Medium.ttf	MiSans TC	Medium	380	62a35e70d364e53fa4c79ec0efb7617f8ec0923fe2a890c52b97914129805bfa	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Semibold.ttf	MiSans TC	Semibold	520	52cb5a7b135d08caf4b82e4ecd0d4af0af4c8b6870a81f13f4d39006af426d71	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Demibold.ttf	MiSans TC	Demibold	450	3d1562c14c1f1677f389b4cc041bd9b45294215176a2742994c344241e5b05dd	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Bold.ttf	MiSans TC	Bold	630	a99b22f66ae1bd4f6be6127f271be7eae810a43d979e7a0bfb6244b0609b2245	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MisansTC-Heavy.ttf	MiSans TC	Heavy	700	70c1f2b291b4007d2d5dfcca68ebe0339b84eae07618f8e52f37f98e38d793d2	https://hyperos.mi.com/font-download/MiSans_TC.zip
+MiSans L3.ttf	MiSans L3	Regular	400	710bc52d40d01d8846254a095780bec95e2f39382500939e4536e4a999bdd844	https://hyperos.mi.com/font-download/MiSans_L3.zip

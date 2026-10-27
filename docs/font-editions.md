@@ -18,6 +18,24 @@
 - 普通版首次导入旧配置时，仅将旧 MiSans 完整固定字体组合恢复为普通默认字体。其他设置和用户自定义的字体组合保留。MiSans 版继续执行其固定字体策略。
 - `text.toml`、`common.toml` 和 bootstrap 配置仍然共用；下载的字体仍存放在 `config/ModernUI/fonts`。
 
+## MiSans 字重档位
+
+100–900 是从细到粗的九个离散选择档位，不是字体文件的 OS/2 原始字重数值。默认 400 档仍使用 Regular。主字体 MiSans、MiSans Latin 与 MiSans TC 使用相同的档位映射；MiSans L3 固定使用 Regular，不参与字重切换。
+
+| 选择档位 | 实体字体风格 | 官方 OS/2 `usWeightClass` |
+| --- | --- | --- |
+| 100 | Thin | 150 |
+| 200 | ExtraLight | 200 |
+| 300 | Light | 250 |
+| 400（默认） | Regular | 330 |
+| 500 | Medium | 380 |
+| 600 | Demibold | 450 |
+| 700 | Semibold | 520 |
+| 800 | Bold | 630 |
+| 900 | Heavy | 700 |
+
+此表依据从小米官方四套字体包实际取得的字体 name 表及 OS/2 元数据。此前 600/700 档的 Semibold/Demibold 顺序相反，会在增大档位时变细；现按实际粗细递增排列。回归检查使用仅含字体名称、原始字重、SHA-256 及官方来源地址的元数据夹具，不随仓库提交字体或许可文件。
+
 ## 构建与取包
 
 GitHub Actions 的 **Build and Release** 每次按普通版、MiSans 版分别执行 `clean build`，运行回归检查并检查最终 JAR 的版本、配置文件名、安装器隔离和加载器配对，合并上传到 `modernui-mc-release-jars` artifact。普通分支推送只产出 artifact；标签或显式填写 release tag 才会发布 GitHub Release。
