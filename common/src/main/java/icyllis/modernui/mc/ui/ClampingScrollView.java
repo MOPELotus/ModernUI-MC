@@ -56,11 +56,43 @@ public class ClampingScrollView extends ScrollView {
     }
 
     public void setChildMaxWidth(int childMaxWidth) {
-        mChildMaxWidth = childMaxWidth;
+        if (mChildMaxWidth != childMaxWidth) {
+            mChildMaxWidth = childMaxWidth;
+            requestLayout();
+        }
     }
 
     public int getChildMaxWidth() {
         return mChildMaxWidth;
+    }
+
+    // Clamp before ScrollView measures its content height. Remeasuring a narrower
+    // child with its old exact height can squeeze the last rows of a long page.
+    @Override
+    protected void measureChild(View child, int parentWidthMeasureSpec, int parentHeightMeasureSpec) {
+        super.measureChild(child, clampWidthSpec(parentWidthMeasureSpec,
+                getPaddingLeft() + getPaddingRight()), parentHeightMeasureSpec);
+    }
+
+    @Override
+    protected void measureChildWithMargins(View child, int parentWidthMeasureSpec, int widthUsed,
+                                          int parentHeightMeasureSpec, int heightUsed) {
+        var params = (MarginLayoutParams) child.getLayoutParams();
+        int widthPadding = getPaddingLeft() + getPaddingRight() +
+                params.leftMargin + params.rightMargin + widthUsed;
+        super.measureChildWithMargins(child, clampWidthSpec(parentWidthMeasureSpec, widthPadding),
+                widthUsed, parentHeightMeasureSpec, heightUsed);
+    }
+
+    private int clampWidthSpec(int widthMeasureSpec, int widthPadding) {
+        if (mChildMaxWidth <= 0) return widthMeasureSpec;
+        int mode = MeasureSpec.getMode(widthMeasureSpec);
+        int width = mChildMaxWidth + widthPadding;
+        if (mode != MeasureSpec.UNSPECIFIED) {
+            width = Math.min(width, MeasureSpec.getSize(widthMeasureSpec));
+        }
+        return MeasureSpec.makeMeasureSpec(width,
+                mode == MeasureSpec.UNSPECIFIED ? MeasureSpec.AT_MOST : mode);
     }
 
     @Override
@@ -68,7 +100,9 @@ public class ClampingScrollView extends ScrollView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (getChildCount() > 0 && mChildMaxWidth > 0) {
-            // constrain the direct child
+            // ScrollView's fillViewport pass may expand the width again. Its
+            // height is safe to retain because the natural height above was
+            // already measured at the clamped width.
             final View child = getChildAt(0);
 
             int childWidth = child.getMeasuredWidth();
