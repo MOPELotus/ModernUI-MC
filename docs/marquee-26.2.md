@@ -1,4 +1,12 @@
-# 26.2 走马灯修复回迁
+# 26.2 走马灯修复回迁（历史记录）
+
+本文保留当时 `26.2-3.13.0.9-marquee.1` 构建的范围与验证安排。下文的三个加载器、版本后缀和“只回迁 26.2”均指该历史构建，不适用于当前 1.21.9–1.21.11 回移分支。
+
+当前分支的 Minecraft／加载器／渲染后端目标见 [README 回移说明](../README.md)，普通版与 MiSans 版的 JDK 21 构建和配置说明见 [字体版本说明](font-editions.md)。当前每个分支构建 Fabric、NeoForge 两种加载器及两种字体版本，共四个最终 JAR；实际运行验收状态应以当前测试记录为准。
+
+当前 `settings.gradle` 保留项目名 `common`，`common/build.gradle` 注册 `checkTextMarquee` 并将其加入 `check`，因此 `./gradlew :common:checkTextMarquee` 仍是有效检查入口。它是 CPU 回归检查，不代表物理显卡上的渲染验收。
+
+## 当时的构建说明
 
 本构建为 `26.2-3.13.0.9-marquee.1`。26.3 构建的用户实际使用反馈无异常后，
 将 `4eeb28301b3786d5049145e3775dc05bf96483ba` 的文字滚动修复回迁到 26.2。
