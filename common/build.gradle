@@ -81,14 +81,14 @@ tasks.register('checkFontVariant', JavaExec) {
 }
 check.dependsOn checkFontVariant
 
-['TooltipUniform', 'GlfwInput', 'VulkanDepthBarrier', 'PackMetadata', 'VulkanSurface', 'ClampingScrollView'].each { checkName ->
+['TooltipUniform', 'GlfwInput', 'VulkanDepthBarrier', 'PackMetadata', 'VulkanSurface', 'ClampingScrollView', 'VulkanAcquire'].each { checkName ->
     def checkTask = tasks.register("check${checkName}", JavaExec) {
         group = 'verification'
         dependsOn testClasses
         classpath = sourceSets.test.runtimeClasspath
         mainClass = "icyllis.modernui.mc.test.${checkName}Check"
         systemProperty 'modernui.projectRoot', rootProject.projectDir.absolutePath
-        if (checkName in ['VulkanDepthBarrier', 'VulkanSurface']) {
+        if (checkName in ['VulkanDepthBarrier', 'VulkanSurface', 'VulkanAcquire']) {
             doFirst {
                 def vulkanJars = configurations.compileClasspath.files.findAll {
                     it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod') && it.name.endsWith('.jar')
