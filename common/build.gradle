@@ -24,6 +24,7 @@ dependencies {
     testImplementation 'org.spongepowered:mixin:0.8.7'
     compileOnly 'org.ow2.asm:asm-tree:9.8'
     testImplementation 'org.ow2.asm:asm-tree:9.8'
+    testImplementation 'org.ow2.asm:asm-commons:9.8'
 
     implementation("dev.icyllis:modernui-core:${core_version}")
     implementation("icyllis.modernui:ModernUI-Markflow:3.12.0") {
@@ -81,14 +82,14 @@ tasks.register('checkFontVariant', JavaExec) {
 }
 check.dependsOn checkFontVariant
 
-['TooltipUniform', 'GlfwInput', 'SpirvArrayLayout', 'VulkanDepthBarrier', 'VulkanSurface', 'VulkanAcquire', 'PackMetadata', 'ClampingScrollView', 'LwjglAbi'].each { checkName ->
+['TooltipUniform', 'GlfwInput', 'SpirvArrayLayout', 'VulkanDepthBarrier', 'VulkanSurface', 'VulkanAcquire', 'PackMetadata', 'ClampingScrollView', 'LwjglAbi', 'VulkanContextLifecycle', 'VulkanGpuOwnership', 'VulkanPipelineLifecycle', 'VulkanImageUploadBarrier', 'VulkanEncoderOwnership'].each { checkName ->
     def checkTask = tasks.register("check${checkName}", JavaExec) {
         group = 'verification'
         dependsOn testClasses
         classpath = sourceSets.test.runtimeClasspath
         mainClass = "icyllis.modernui.mc.test.${checkName}Check"
         systemProperty 'modernui.projectRoot', rootProject.projectDir.absolutePath
-        if (checkName in ['VulkanDepthBarrier', 'VulkanSurface', 'VulkanAcquire']) {
+        if (checkName in ['VulkanDepthBarrier', 'VulkanSurface', 'VulkanAcquire', 'VulkanGpuOwnership', 'VulkanPipelineLifecycle', 'VulkanImageUploadBarrier', 'VulkanEncoderOwnership']) {
             doFirst {
                 def vulkanJars = configurations.compileClasspath.files.findAll {
                     it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod') && it.name.endsWith('.jar')

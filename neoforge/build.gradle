@@ -51,6 +51,7 @@ dependencies {
     compileOnly "maven.modrinth:vulkanmod-reforged:KggbdG7c"
     testCompileOnly "maven.modrinth:vulkanmod-reforged:KggbdG7c"
     testImplementation 'org.ow2.asm:asm-tree:9.8'
+    testImplementation 'org.ow2.asm:asm-commons:9.8'
     testImplementation "org.lwjgl:lwjgl-vulkan:${lwjgl_version}"
     neoForge "net.neoforged:neoforge:${neoforge_version}"
 
@@ -153,6 +154,36 @@ tasks.register('checkVulkanGlobalUniform', JavaExec) {
     }
 }
 check.dependsOn checkVulkanGlobalUniform
+
+tasks.register('checkNeoVulkanShutdown', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.NeoVulkanShutdownCheck'
+    doFirst {
+        def jars = configurations.compileClasspath.files.findAll {
+            it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod-reforged') && it.name.endsWith('.jar')
+        }
+        if (jars.empty) throw new GradleException('Missing actual VulkanMod Reforged API JAR')
+        setArgs(jars.collect { it.absolutePath })
+    }
+}
+check.dependsOn checkNeoVulkanShutdown
+
+tasks.register('checkVulkanTextureViewOwnership', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.VulkanTextureViewOwnershipCheck'
+    doFirst {
+        def jars = configurations.compileClasspath.files.findAll {
+            it.name.toLowerCase(java.util.Locale.ROOT).contains('vulkanmod-reforged') && it.name.endsWith('.jar')
+        }
+        if (jars.empty) throw new GradleException('Missing actual VulkanMod Reforged API JAR')
+        setArgs(jars.collect { it.absolutePath })
+    }
+}
+check.dependsOn checkVulkanTextureViewOwnership
 
 
 shadowJar {

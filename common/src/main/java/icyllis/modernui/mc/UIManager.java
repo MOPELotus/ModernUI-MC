@@ -1262,6 +1262,9 @@ public abstract class UIManager implements LifecycleOwner {
                 e.printStackTrace();
             }
         }
+        if (ModernUIMod.isVulkanModLoaded()) {
+            VulkanModIntegration.closeContext(sInstance == null ? null : sInstance.mUiThread);
+        }
         LOGGER.debug(MARKER, "Quited Modern UI");
     }
 

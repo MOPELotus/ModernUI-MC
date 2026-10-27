@@ -52,10 +52,20 @@ for loader in loaders:
                           'MixinVulkanImage', 'MixinVulkanRenderer',
                           'MixinGpuBufferPoolAddress', 'MixinParcelBufferFree',
                           'MixinVulkanBindingBufferFree', 'MixinVulkanLongBufferFree',
-                          'MixinWindowsWindowBorderAbi'):
+                          'MixinWindowsWindowBorderAbi', 'AccessVulkanPipelines',
+                          'MixinVulkanPipelineLifecycle', 'MixinVulkanGpuDeviceOwnership',
+                          'MixinVulkanGpuResourceOwnership', 'MixinVulkanCloudOwnership',
+                          'MixinVulkanImageUpload', 'AccessVulkanGlFramebuffer',
+                          'MixinVulkanCommandEncoderOwnership'):
                 assert mixin in mixins['client'], (name, 'unregistered compatibility Mixin', mixin)
                 assert f'icyllis/modernui/mc/mixin/{mixin}.class' in entries, (name, mixin)
             if loader == 'neoforge':
+                for mixin in ('MixinVulkanCommandEncoder', 'MixinVulkanUploadManager',
+                              'MixinNeoVulkanShutdown', 'MixinNeoVulkanShutdownGate',
+                              'MixinVulkanTextureViewOwnership', 'MixinVulkanTextureViewLifecycle'):
+                    assert mixin in mixins['client'], (name, 'unregistered Neo compatibility Mixin', mixin)
+                    assert f'icyllis/modernui/mc/mixin/{mixin}.class' in entries, (name, mixin)
+                assert 'icyllis/modernui/mc/neoforge/NeoVulkanShutdown.class' in entries, name
                 # These Mixin targets must load through FML's transforming game
                 # classloader. Plain nested compiler JARs become plugin libraries.
                 for cls in ('compiler/spirv/SPIRVCodeGenerator', 'granite/GraniteDevice'):
@@ -74,6 +84,9 @@ for loader in loaders:
                         with zipfile.ZipFile(io.BytesIO(jar.read(path))) as nested:
                             assert 'icyllis/arc3d/compiler/spirv/SPIRVCodeGenerator.class' not in nested.namelist(), (
                                 name, path, 'duplicate nested compiler target')
+            if loader == 'fabric':
+                assert 'MixinVulkanDrawBuffersLifecycle' in mixins['client'], name
+                assert 'icyllis/modernui/mc/mixin/MixinVulkanDrawBuffersLifecycle.class' in entries, name
         print(f'PASS: {name}')
 actual = {p.name for p in Path(output).glob('*.jar')}
 assert actual == expected, f'missing={expected-actual}, unexpected={actual-expected}'

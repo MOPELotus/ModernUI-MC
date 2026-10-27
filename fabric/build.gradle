@@ -10,6 +10,10 @@ version = "${minecraft_version}-${mod_version}" as String
 
 configurations {
     shadow
+    vulkanRuntimeCheck {
+        canBeConsumed = false
+        transitive = false
+    }
 }
 
 loom {
@@ -79,6 +83,8 @@ dependencies {
 
     compileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
     testCompileOnly("org.lwjgl:lwjgl-vulkan:${lwjgl_version}")
+    testImplementation 'org.ow2.asm:asm-tree:9.8'
+    vulkanRuntimeCheck 'maven.modrinth:vulkanmod:hWKRTXbQ'
 
     //implementation("com.vladsch.flexmark:flexmark:${flexmark_version}")
 
@@ -117,6 +123,17 @@ tasks.withType(ProcessResources).configureEach {
 test {
     failOnNoDiscoveredTests = false
 }
+
+tasks.register('checkVulkanDrawBuffersLifecycle', JavaExec) {
+    group = 'verification'
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'icyllis.modernui.mc.test.VulkanDrawBuffersLifecycleCheck'
+    doFirst {
+        setArgs([configurations.vulkanRuntimeCheck.singleFile.absolutePath])
+    }
+}
+check.dependsOn checkVulkanDrawBuffersLifecycle
 
 
 shadowJar {
