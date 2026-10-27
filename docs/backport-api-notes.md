@@ -51,6 +51,12 @@
 
 11 通过独立 sampler 按 run 选择过滤。`TextSampling.needsLinear` 根据 GUI 缩放后的物理像素位置、缩放和旋转判断是否需要线性采样，不能只看 GUI 坐标是否为整数。`checkTextMarquee` 覆盖实际输出顶点的连续移动、采样判断，以及 Canvas 的文字原点与缓存复用接入。
 
+## Vulkan 交换链同步入口
+
+Fabric VulkanMod 的 acquire 调用位于 `beginFrame()`，NeoForge Reforged 位于 `beginFrame(int)`。`MixinVulkanRenderer` 使用 `beginFrame*` 显式选择所有重载，并要求唯一的实际 `vkAcquireNextImageKHR` 调用。Mixin 的裸方法名默认仅选择第一个重载，不能用扫描所有同名方法的测试代替真实选择规则。
+
+兼容层按实际 acquire 成功或 SUBOPTIMAL 的 semaphore 信号跟踪等待状态，补齐 resize/flush 提交缺失的等待，避免重复消费二进制 semaphore；失败提交保留信号，同步对象销毁时清理旧生命周期。`checkVulkanAcquire` 同时检查状态机、真实 Mixin `SELECT_MEMBER` 规则和实际发行 JAR 的 acquire/submit/销毁入口，包含 Neo 裸方法名漏选的负对照。
+
 ## 检查入口
 
 在对应版本分支执行：
@@ -72,6 +78,7 @@
 | `checkSpirvArrayLayout` | 实际着色器生成与 SPIR-V 数组布局修复 |
 | `checkVulkanDepthBarrier` | Vulkan 深度同步修复与目标 VulkanMod 字节码入口 |
 | `checkVulkanSurface` | Vulkan present 支持判定与目标 VulkanMod 字节码入口 |
+| `checkVulkanAcquire` | acquire 信号所有权、真实 Mixin 重载选择和提交等待入口 |
 | `checkFontVariant` | 标准版与 MiSans 版默认配置及编译边界 |
 
 这些任务通过不代表物理显卡、窗口、tooltip 显示或输入体验已经验收通过。

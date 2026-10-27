@@ -33,6 +33,7 @@
     "MixinTextFieldHelper",
     "MixinVulkanDeviceManager",
     "MixinVulkanImage",
+    "MixinVulkanRenderer",
     "MixinWindow"
   ]
 }
