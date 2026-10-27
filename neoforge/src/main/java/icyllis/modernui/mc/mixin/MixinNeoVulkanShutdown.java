@@ -3,7 +3,6 @@ package icyllis.modernui.mc.mixin;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.neoforge.NeoVulkanShutdown;
 import net.minecraft.client.Minecraft;
-import net.vulkanmod.vulkan.Vulkan;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,7 +14,7 @@ public abstract class MixinNeoVulkanShutdown {
     @Inject(method = "close()V", at = @At("HEAD"), require = 1, allow = 1)
     private void modernui$idleBeforeOwnersClose(CallbackInfo ci) {
         if (ModernUIMod.isVulkanModLoaded() && !NeoVulkanShutdown.started()) {
-            Vulkan.waitIdle();
+            NeoVulkanShutdown.waitIdle();
         }
     }
 
@@ -24,7 +23,7 @@ public abstract class MixinNeoVulkanShutdown {
             remap = false), require = 1, allow = 1)
     private void modernui$closeNativeAfterOwners(CallbackInfo ci) {
         if (ModernUIMod.isVulkanModLoaded() && !NeoVulkanShutdown.started()) {
-            Vulkan.cleanUp();
+            NeoVulkanShutdown.cleanUp();
         }
     }
 }

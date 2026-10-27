@@ -8,6 +8,16 @@ public final class NeoVulkanShutdown {
 
     private NeoVulkanShutdown() {}
 
+    // Keep optional VulkanMod symbols out of Minecraft-targeting mixin bytecode.
+    // Mixin eagerly resolves member owners even when a runtime branch skips them.
+    public static void waitIdle() {
+        net.vulkanmod.vulkan.Vulkan.waitIdle();
+    }
+
+    public static void cleanUp() {
+        net.vulkanmod.vulkan.Vulkan.cleanUp();
+    }
+
     public static boolean begin() {
         return STARTED.compareAndSet(false, true);
     }

@@ -69,6 +69,8 @@ NeoForge 1.21.11 的 Reforged 队列检查包括：`checkVulkanUploadBarrier` �
 
 Reforged 0.3.0 的发行包没有调用 `Vulkan.cleanUp` 的入口。NeoForge 1.21.11 专用 Mixin 在真实 `Minecraft.close` 入口等待设备空闲，并在 Java `GpuDevice.close` 完成后、窗口销毁前调用原生清理；清理入口有一次性保护，防止重复执行原生设备清理。`checkNeoVulkanShutdown` 使用真实 Minecraft 和 Reforged 字节码检查这一顺序，并执行实际 handler 的重复关闭及 OpenGL 保护检查。运行验收还需确认真实 `vkDestroyDevice` 调用完成，不能仅看退出码或零校验错误。
 
+面向 Minecraft 的 Mixin 仅调用本模组的 helper，可选 VulkanMod 符号留在 helper 内，避免 Mixin 预处理器在无 VulkanMod 时提前解析它们。该检查实际执行 Mixin 的成员引用预处理，在拒绝所有 VulkanMod 元数据的环境中验证成功，并以原始直接调用复现缺类异常。
+
 桥接层在 UI 线程退出、两个 Arc context 引用归零后关闭自身 VulkanManager 的分配器和 feature 结构，并拒绝拥有外部 device 或 instance 的 manager。VulkanMod 的图形设备登记自身创建的 Java buffer/texture wrapper，正常 close 时移除；设备关闭时补完剩余 wrapper 和旧版 cloud buffer 的正常释放。管线清理仅遍历实际登记的剩余 Pipeline owner，放在原有延迟释放排空之后，避免重复销毁。
 
 VkCommandEncoder 构造时将其 scratch framebuffer 的所有者登记到传入的实际设备；关闭时调用既有 `cleanUp(false)`，只释放 framebuffer/render pass，保留借用的纹理附件。
