@@ -27,6 +27,7 @@
     "MixinMouseHandler",
     "MixinRenderSystem",
     "MixinScreen",
+    "MixinVulkanRenderer",
     "MixinVulkanDeviceManager",
     "MixinVulkanImage",
     "MixinSPIRVCodeGenerator",

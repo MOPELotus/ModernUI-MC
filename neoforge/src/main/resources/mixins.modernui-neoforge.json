@@ -24,6 +24,7 @@
     "MixinMinecraft",
     "MixinRenderSystem",
     "MixinScreen",
+    "MixinVulkanRenderer",
     "MixinVulkanDeviceManager",
     "MixinVulkanImage",
     "MixinSPIRVCodeGenerator",
