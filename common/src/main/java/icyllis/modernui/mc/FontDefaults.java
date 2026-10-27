@@ -106,8 +106,8 @@ public final class FontDefaults {
             case 200 -> "ExtraLight";
             case 300 -> "Light";
             case 500 -> "Medium";
-            case 600 -> "Semibold";
-            case 700 -> "Demibold";
+            case 600 -> "Demibold";
+            case 700 -> "Semibold";
             case 800 -> "Bold";
             case 900 -> "Heavy";
             default -> "Regular";
