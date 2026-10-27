@@ -18,32 +18,16 @@
 
 package icyllis.modernui.mc.b3d;
 
-import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.opengl.FrameBufferCache;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.opengl.GlConst;
 import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderSystem;
 import icyllis.arc3d.core.SharedPtr;
 import icyllis.arc3d.engine.Engine;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 // Wrap Arc3D GL texture in Blaze3D GL backend as a unique owner
 public class GlTexture_Wrapped extends GlTexture {
-
-    private static final Field BACKEND_FIELD;
-
-    static {
-        try {
-            BACKEND_FIELD = GpuDevice.class.getDeclaredField("backend");
-            BACKEND_FIELD.setAccessible(true);
-        } catch (ReflectiveOperationException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
 
     // usage ref count is managed by caller
     // we don't care about command buffer usage in GL backend
@@ -53,16 +37,18 @@ public class GlTexture_Wrapped extends GlTexture {
         super(USAGE_COPY_SRC | USAGE_TEXTURE_BINDING |
                         (source.isRenderable() ? USAGE_RENDER_ATTACHMENT : 0),
                 source.getLabel(),
-                source.getGLFormat() == GlConst.GL_RGBA8 ? GpuFormat.RGBA8_UNORM : GpuFormat.R8_UNORM,
+                source.getGLFormat() == GlConst.GL_RGBA8 ? TextureFormat.RGBA8 : TextureFormat.RED8,
                 source.getWidth(), source.getHeight(),
                 /*depthOrLayers*/ 1, source.getMipLevelCount(),
-                source.getHandle(), frameBufferCache());
+                source.getHandle());
         assert source.getImageType() == Engine.ImageType.k2D;
         assert source.getGLFormat() == GlConst.GL_RGBA8 || source.getGLFormat() == GlConst.GL_R8;
         assert source.getDepth() == 1;
         assert source.getArraySize() == 1;
         assert source.getSampleCount() == 1;
         this.source = source; // move
+        setAddressMode(com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE);
+        setTextureFilter(com.mojang.blaze3d.textures.FilterMode.NEAREST, false);
     }
 
     @Override
@@ -81,14 +67,4 @@ public class GlTexture_Wrapped extends GlTexture {
     public void removeViews() {
     }
 
-    private static FrameBufferCache frameBufferCache() {
-        try {
-            Object backend = BACKEND_FIELD.get(RenderSystem.getDevice());
-            Method method = backend.getClass().getDeclaredMethod("frameBufferCache");
-            method.setAccessible(true);
-            return (FrameBufferCache) method.invoke(backend);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to access Minecraft OpenGL framebuffer cache", e);
-        }
-    }
 }

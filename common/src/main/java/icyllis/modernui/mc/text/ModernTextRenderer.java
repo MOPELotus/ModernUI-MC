@@ -25,7 +25,7 @@ import org.joml.Vector3f;
 /**
  * Modern text configuration and 3D mode selection.
  * <p>
- * Minecraft 26.2 prepares GUI text through {@link net.minecraft.client.gui.Font.PreparedText};
+ * Minecraft 1.21.10 prepares GUI text through {@link net.minecraft.client.gui.Font.PreparedText};
  * Modern UI renders that path through {@link ModernPreparedText}.
  */
 public final class ModernTextRenderer {

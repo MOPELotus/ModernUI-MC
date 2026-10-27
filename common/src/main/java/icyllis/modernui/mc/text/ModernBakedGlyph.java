@@ -91,7 +91,7 @@ public class ModernBakedGlyph implements BakedGlyph {
 
     @Nullable
     @Override
-    public TextRenderable.Styled createGlyph(float x, float y, int color, int shadowColor, @Nonnull Style style,
+    public TextRenderable createGlyph(float x, float y, int color, int shadowColor, @Nonnull Style style,
                                              float boldOffset, float shadowOffset) {
         throw new UnsupportedOperationException("Modern Text Engine");
     }

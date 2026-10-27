@@ -23,14 +23,14 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import icyllis.modernui.graphics.MathUtil;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import org.joml.Matrix3x2fc;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import org.joml.Matrix3x2f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * The vanilla {@link net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState}
+ * The vanilla {@link net.minecraft.client.gui.render.state.ColoredRectangleRenderState}
  * only allows integer coordinates and vertical gradients, this class removes these restrictions.
  *
  * @since 3.12
@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 public record GradientRectangleRenderState(
         @Nonnull RenderPipeline pipeline,
         @Nonnull TextureSetup textureSetup,
-        @Nonnull Matrix3x2fc pose,
+        @Nonnull Matrix3x2f pose,
         float left, float top, float right, float bottom,
         int colorUL, int colorUR, int colorLR, int colorLL,
         @Nullable ScreenRectangle scissorArea,
@@ -53,7 +53,7 @@ public record GradientRectangleRenderState(
      */
     public GradientRectangleRenderState(@Nonnull RenderPipeline pipeline,
                                         @Nonnull TextureSetup textureSetup,
-                                        @Nonnull Matrix3x2fc pose,
+                                        @Nonnull Matrix3x2f pose,
                                         float left, float top, float right, float bottom,
                                         int colorUL, int colorUR, int colorLR, int colorLL,
                                         @Nullable ScreenRectangle scissorArea) {
@@ -79,7 +79,7 @@ public record GradientRectangleRenderState(
     //@formatter:off
     @Nullable
     public static ScreenRectangle getBounds(float left, float top, float right, float bottom,
-                                            @Nonnull Matrix3x2fc pose, @Nullable ScreenRectangle scissor) {
+                                            @Nonnull Matrix3x2f pose, @Nullable ScreenRectangle scissor) {
         float x1 = pose.m00() * left +  pose.m10() * top    + pose.m20();
         float y1 = pose.m01() * left +  pose.m11() * top    + pose.m21();
         float x2 = pose.m00() * right + pose.m10() * top    + pose.m20();

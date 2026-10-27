@@ -41,7 +41,7 @@ import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.font.providers.*;
 import net.minecraft.network.chat.*;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.*;
 import net.minecraft.util.profiling.Profiler;
@@ -80,7 +80,7 @@ public class TextLayoutEngine extends FontResourceManager
         implements MuiModApi.OnWindowResizeListener, MuiModApi.OnDebugDumpListener {
 
     public static final Marker MARKER = MarkerManager.getMarker("TextLayout");
-    private static final Identifier UNIFORM_FONT = Identifier.withDefaultNamespace("uniform");
+    private static final ResourceLocation UNIFORM_FONT = ResourceLocation.withDefaultNamespace("uniform");
 
     /**
      * Config values
@@ -124,15 +124,15 @@ public class TextLayoutEngine extends FontResourceManager
     /**
      * Logical font names, CSS convention.
      */
-    public static final Identifier SANS_SERIF = ModernUIMod.location("sans-serif");
-    public static final Identifier SERIF = ModernUIMod.location("serif");
-    public static final Identifier MONOSPACED = ModernUIMod.location("monospace"); // no -d
+    public static final ResourceLocation SANS_SERIF = ModernUIMod.location("sans-serif");
+    public static final ResourceLocation SERIF = ModernUIMod.location("serif");
+    public static final ResourceLocation MONOSPACED = ModernUIMod.location("monospace"); // no -d
     /**
      * We never load Unicode fonts, they will be ModernUI default typeface list and can be
      * dynamically reloaded. However, if other fonts contain UNIHEX or refer to Unicode fonts,
      * we use this placeholder and redirect it to the <em>current</em> ModernUI default typeface list.
      */
-    private static final Identifier INTERNAL_DEFAULT = ModernUIMod.location("internal-default");
+    private static final ResourceLocation INTERNAL_DEFAULT = ModernUIMod.location("internal-default");
 
     /*
      * Draw and cache all glyphs of all fonts needed
@@ -269,11 +269,11 @@ public class TextLayoutEngine extends FontResourceManager
     /**
      * All the fonts to use. Maps typeface name to FontCollection.
      */
-    private final HashMap<Identifier, FontCollection> mFontCollections = new HashMap<>();
+    private final HashMap<ResourceLocation, FontCollection> mFontCollections = new HashMap<>();
 
     private FontCollection mRawDefaultFontCollection;
 
-    private final ConcurrentHashMap<Identifier, FontCollection> mRegisteredFonts = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<ResourceLocation, FontCollection> mRegisteredFonts = new ConcurrentHashMap<>();
 
     public static final int DEFAULT_MIN_PIXEL_DENSITY_FOR_SDF = 4;
 
@@ -636,7 +636,7 @@ public class TextLayoutEngine extends FontResourceManager
     }
 
     private static final class LoadResults extends FontResourceManager.LoadResults {
-        volatile Map<Identifier, FontCollection> mFontCollections;
+        volatile Map<ResourceLocation, FontCollection> mFontCollections;
     }
 
     // ASYNC
@@ -745,41 +745,41 @@ public class TextLayoutEngine extends FontResourceManager
         }
     }
 
-    private static boolean isUnicodeFont(@Nonnull Identifier name) {
+    private static boolean isUnicodeFont(@Nonnull ResourceLocation name) {
         if (name.equals(UNIFORM_FONT)) {
             return true;
         }
-        if (name.getNamespace().equals(Identifier.DEFAULT_NAMESPACE)) {
+        if (name.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE)) {
             return name.getPath().equals("include/unifont");
         }
         return false;
     }
 
     private static final class RawFontBundle
-            implements DependencySorter.Entry<Identifier> {
-        final Identifier name;
+            implements DependencySorter.Entry<ResourceLocation> {
+        final ResourceLocation name;
         /**
-         * We load font families other than {@link #isUnicodeFont(Identifier)}.
+         * We load font families other than {@link #isUnicodeFont(ResourceLocation)}.
          * <p>
-         * Either FontFamily or Identifier (reference).
+         * Either FontFamily or ResourceLocation (reference).
          */
         Set<Object> families = new LinkedHashSet<>();
         /**
          * References to other fonts.
          */
-        Set<Identifier> dependencies = new HashSet<>();
+        Set<ResourceLocation> dependencies = new HashSet<>();
 
-        RawFontBundle(Identifier name) {
+        RawFontBundle(ResourceLocation name) {
             this.name = name;
         }
 
         @Override
-        public void visitRequiredDependencies(@Nonnull Consumer<Identifier> visitor) {
+        public void visitRequiredDependencies(@Nonnull Consumer<ResourceLocation> visitor) {
             dependencies.forEach(visitor);
         }
 
         @Override
-        public void visitOptionalDependencies(@Nonnull Consumer<Identifier> visitor) {
+        public void visitOptionalDependencies(@Nonnull Consumer<ResourceLocation> visitor) {
         }
     }
 
@@ -831,11 +831,11 @@ public class TextLayoutEngine extends FontResourceManager
                             })
                             .collect(Collectors.joining(",")));
         }
-        final var sorter = new DependencySorter<Identifier, RawFontBundle>();
+        final var sorter = new DependencySorter<ResourceLocation, RawFontBundle>();
         for (var bundle : bundles) {
             sorter.addEntry(bundle.name, bundle);
         }
-        final var map = new HashMap<Identifier, FontCollection>();
+        final var map = new HashMap<ResourceLocation, FontCollection>();
         map.put(INTERNAL_DEFAULT, ModernUI.getSelectedTypeface());
         sorter.orderByDependencies((name, bundle) -> {
             if (isUnicodeFont(name)) {
@@ -846,7 +846,7 @@ public class TextLayoutEngine extends FontResourceManager
                 if (object instanceof FontFamily family) {
                     set.add(family);
                 } else {
-                    var reference = (Identifier) object;
+                    var reference = (ResourceLocation) object;
                     FontCollection resolved = map.get(reference);
                     if (resolved != null) {
                         set.addAll(resolved.getFamilies());
@@ -868,7 +868,7 @@ public class TextLayoutEngine extends FontResourceManager
     }
 
     private static void loadSingleFont(@Nonnull ResourceManager resources,
-                                       Identifier name,
+                                       ResourceLocation name,
                                        RawFontBundle bundle,
                                        String sourcePackId, int index,
                                        JsonObject metadata,
@@ -912,7 +912,7 @@ public class TextLayoutEngine extends FontResourceManager
                 bundle.families.add(INTERNAL_DEFAULT);
             }
             case REFERENCE -> {
-                Identifier reference = ((ProviderReferenceDefinition) definition).id();
+                ResourceLocation reference = ((ProviderReferenceDefinition) definition).id();
                 if (!isUnicodeFont(reference)) {
                     bundle.families.add(reference);
                     bundle.dependencies.add(reference);
@@ -926,7 +926,7 @@ public class TextLayoutEngine extends FontResourceManager
     }
 
     @Nonnull
-    private static FontFamily createTTF(@Nonnull Identifier file, ResourceManager resources) {
+    private static FontFamily createTTF(@Nonnull ResourceLocation file, ResourceManager resources) {
         var location = file.withPrefix("font/");
         try (var stream = resources.open(location)) {
             return FontFamily.createFamily(stream, /*register*/false);
@@ -1235,7 +1235,7 @@ public class TextLayoutEngine extends FontResourceManager
      * @return the font collection
      */
     @Nonnull
-    public FontCollection getFontCollection(@Nonnull Identifier fontName) {
+    public FontCollection getFontCollection(@Nonnull ResourceLocation fontName) {
         if (mForceUnicodeFont == Boolean.TRUE &&
                 fontName.equals(Minecraft.DEFAULT_FONT)) {
             fontName = UNIFORM_FONT;

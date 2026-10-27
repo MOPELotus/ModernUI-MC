@@ -24,11 +24,9 @@ import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.mc.text.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.IMEPreeditOverlay;
-import net.minecraft.client.gui.components.TextCursorUtils;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.*;
@@ -36,7 +34,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import org.joml.Matrix3x2f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
@@ -68,6 +66,9 @@ public abstract class MixinEditBox extends AbstractWidget {
 
     @Shadow
     private boolean isEditable;
+
+    @Shadow
+    private boolean textShadow;
 
     @Shadow
     private int textColor;
@@ -112,9 +113,6 @@ public abstract class MixinEditBox extends AbstractWidget {
     @Nullable
     private Component hint;
 
-    @Shadow
-    @Nullable
-    private IMEPreeditOverlay preeditOverlay;
 
     public MixinEditBox(int x, int y, int w, int h, Component msg) {
         super(x, y, w, h, msg);
@@ -143,11 +141,11 @@ public abstract class MixinEditBox extends AbstractWidget {
      * @reason Modern Text Engine
      */
     @Inject(
-            method = "extractWidgetRenderState",
+            method = "renderWidget",
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/components/EditBox;isEditable:Z",
                     opcode = Opcodes.GETFIELD),
             cancellable = true)
-    public void onRenderWidget(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTicks,
+    public void onRenderWidget(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTicks,
                                CallbackInfo ci) {
         final TextLayoutEngine engine = TextLayoutEngine.getInstance();
 
@@ -172,11 +170,11 @@ public abstract class MixinEditBox extends AbstractWidget {
             FormattedCharSequence subSequence = applyFormat(subText, displayPos);
             if (!(subSequence instanceof VanillaTextWrapper)) {
                 separate = true;
-                gr.text(font, subSequence, baseX, baseY, color, true);
+                gr.drawString(font, subSequence, baseX, baseY, color, textShadow);
                 hori += engine.getStringSplitter().measureText(subSequence);
             } else {
                 separate = false;
-                gr.text(font, new VanillaTextWrapper(viewText), baseX, baseY, color, true);
+                gr.drawString(font, new VanillaTextWrapper(viewText), baseX, baseY, color, textShadow);
                 hori += engine.getStringSplitter().measureText(viewText);
             }
         } else {
@@ -213,18 +211,18 @@ public abstract class MixinEditBox extends AbstractWidget {
             FormattedCharSequence subSequence = applyFormat(subText, cursorPos);
             gr.pose().pushMatrix();
             gr.pose().translate(hori - baseX, 0);
-            gr.text(font, subSequence, baseX, baseY, color, true);
+            gr.drawString(font, subSequence, baseX, baseY, color, textShadow);
             gr.pose().popMatrix();
         }
 
         if (hint != null && viewText.isEmpty() && !isFocused()) {
-            gr.text(font, hint, baseX, baseY, color);
+            gr.drawString(font, hint, baseX, baseY, color, textShadow);
         }
 
         if (!cursorNotAtEnd && suggestion != null) {
             gr.pose().pushMatrix();
             gr.pose().translate(cursorX - baseX, 0);
-            gr.text(font, suggestion, baseX, baseY, 0xFF808080, true);
+            gr.drawString(font, suggestion, baseX, baseY, 0xFF808080, textShadow);
             gr.pose().popMatrix();
         }
 
@@ -279,16 +277,12 @@ public abstract class MixinEditBox extends AbstractWidget {
             } else {
                 gr.pose().pushMatrix();
                 gr.pose().translate(cursorX - baseX, 0);
-                TextCursorUtils.extractAppendCursor(gr, font, baseX, baseY, color, true);
+                gr.drawString(font, "_", baseX, baseY, color, textShadow);
                 gr.pose().popMatrix();
             }
         }
         if (isHovered()) {
             gr.requestCursor(isEditable ? CursorTypes.IBEAM : CursorTypes.NOT_ALLOWED);
-        }
-        if (preeditOverlay != null) {
-            preeditOverlay.updateInputPosition((int) cursorX, textY);
-            gr.setPreeditOverlay(preeditOverlay);
         }
         // unconditional
         ci.cancel();

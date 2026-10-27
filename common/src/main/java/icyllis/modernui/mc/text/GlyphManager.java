@@ -19,7 +19,6 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.Transparency;
 import icyllis.arc3d.engine.Engine;
 import icyllis.modernui.annotation.RenderThread;
 import icyllis.modernui.graphics.Bitmap;
@@ -37,8 +36,7 @@ import net.minecraft.client.gui.font.FontManager;
 import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
-import net.minecraft.client.renderer.texture.MipmapStrategy;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 import org.lwjgl.BufferUtils;
@@ -80,9 +78,9 @@ public class GlyphManager {
 
     public static final Marker MARKER = MarkerManager.getMarker("Glyph");
 
-    public static final Identifier FONT_SHEET = ModernUIMod.location("textures/atlas/font.png");
-    public static final Identifier EMOJI_SHEET = ModernUIMod.location("textures/atlas/emoji.png");
-    public static final Identifier BITMAP_SHEET = ModernUIMod.location("textures/atlas/bitmap.png");
+    public static final ResourceLocation FONT_SHEET = ModernUIMod.location("textures/atlas/font.png");
+    public static final ResourceLocation EMOJI_SHEET = ModernUIMod.location("textures/atlas/emoji.png");
+    public static final ResourceLocation BITMAP_SHEET = ModernUIMod.location("textures/atlas/bitmap.png");
 
     /**
      * The width in pixels of a transparent border between individual glyphs in the atlas.
@@ -624,13 +622,9 @@ public class GlyphManager {
             if (bitmap.getWidth() == EMOJI_SIZE && bitmap.getHeight() == EMOJI_SIZE) {
                 long src = bitmap.getAddress();
                 @SuppressWarnings("resource") NativeImage[] mips = MipmapGenerator.generateMipLevels(
-                        ModernUIMod.location(path),
                         new NativeImage[]{new NativeImage(NativeImage.Format.RGBA, EMOJI_SIZE, EMOJI_SIZE,
                                 false, src)},
-                        1,
-                        MipmapStrategy.MEAN,
-                        0,
-                        Transparency.TRANSPARENT_AND_TRANSLUCENT
+                        1
                 );
                 glyph.x = 0;
                 glyph.y = -EMOJI_ASCENT;

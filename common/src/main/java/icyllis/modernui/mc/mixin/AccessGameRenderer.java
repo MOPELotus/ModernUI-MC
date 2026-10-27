@@ -19,7 +19,7 @@
 package icyllis.modernui.mc.mixin;
 
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -27,5 +27,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface AccessGameRenderer {
 
     @Invoker("setPostEffect")
-    void invokeSetPostEffect(Identifier location);
+    void invokeSetPostEffect(ResourceLocation location);
 }

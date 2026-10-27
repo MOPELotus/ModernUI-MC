@@ -18,7 +18,7 @@
 
 package icyllis.modernui.mc.text;
 
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
@@ -36,12 +36,12 @@ import icyllis.modernui.annotation.Nullable;
 import icyllis.modernui.annotation.RenderThread;
 import icyllis.modernui.core.Core;
 import icyllis.modernui.mc.ModernUIMod;
-import icyllis.modernui.mc.NativeVulkanIntegration;
+import icyllis.modernui.mc.VulkanModIntegration;
 import icyllis.modernui.text.TextUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
@@ -115,6 +115,7 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
      */
     //private final boolean mLinearSampling;
     private final boolean mUseMipmaps;
+    private final boolean mLinearSampling;
 
     // overflow and wrap
     private int mLastCompactChunkIndex;
@@ -126,7 +127,7 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
         mBorderWidth = borderWidth;
         // 64MB at most
         mMaxTextureSize = Math.min(
-                RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSize(),
+                RenderSystem.getDevice().getMaxTextureSize(),
                 maskFormat == Engine.MASK_FORMAT_A8
                         ? 8192
                         : 4096
@@ -134,30 +135,12 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
         assert mMaxTextureSize >= 1024;
         assert mBorderWidth >= 0 && mBorderWidth <= 2;
 
-        // this is a fallback sampling method, generally used for direct mask, NEAREST is performant
-        // when used for SDF, a sampler object will override this setting
-        /*glTexParameteri(
-                GL_TEXTURE_2D,
-                GL_TEXTURE_MAG_FILTER,
-                GL_NEAREST
-        );
-        glTexParameteri(
-                GL_TEXTURE_2D,
-                GL_TEXTURE_MIN_FILTER,
-                mLinearSampling && (sLinearSamplingA8Atlas ||
-                        mMaskFormat == Engine.MASK_FORMAT_ARGB)   // color emoji requires linear sampling
-                        ? GL_LINEAR_MIPMAP_LINEAR
-                        : GL_NEAREST
-        );*/
-        boolean linear = linearSampling && (sLinearSamplingA8Atlas ||
-                mMaskFormat == Engine.MASK_FORMAT_ARGB);   // color emoji requires linear sampling
-        // color emoji uses one extra mipmap level
-        mUseMipmaps = linearSampling && mMaskFormat == Engine.MASK_FORMAT_ARGB;
-        sampler = RenderSystem.getSamplerCache().getSampler(
-                AddressMode.REPEAT, AddressMode.REPEAT,
-                linear ? FilterMode.LINEAR : FilterMode.NEAREST, FilterMode.NEAREST, mUseMipmaps
-        );
-        // sampler is from global cache, no need to close
+        // 1.21.9/10 store filtering on the texture, with no per-draw sampler.
+        // The A8 atlas serves both SDF and direct GUI text in the same frame;
+        // linear filtering keeps SDF edges and fractional marquee motion stable.
+        mLinearSampling = maskFormat == Engine.MASK_FORMAT_A8 ||
+                linearSampling && maskFormat == Engine.MASK_FORMAT_ARGB;
+        mUseMipmaps = linearSampling && maskFormat == Engine.MASK_FORMAT_ARGB;
     }
 
     /**
@@ -204,13 +187,14 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
         // include border
         var commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         commandEncoder.writeToTexture(getTexture(), pixels,
+                mMaskFormat == Engine.MASK_FORMAT_A8 ? NativeImage.Format.LUMINANCE : NativeImage.Format.RGBA,
                 0, 0, rect.x(), rect.y(),
                 rect.width(), rect.height());
         if (mUseMipmaps) {
             assert mipPixels != null;
-            commandEncoder.writeToTexture(getTexture(), mipPixels.getPixelBytes(),
+            commandEncoder.writeToTexture(getTexture(), mipPixels,
                     1, 0, rect.x() / 2, rect.y() / 2,
-                    rect.width() / 2, rect.height() / 2);
+                    rect.width() / 2, rect.height() / 2, 0, 0);
         }
         /*int rowBytes = rect.width() * ColorInfo.bytesPerPixel(colorType);
         boolean res = ((GLDevice) mContext.getDevice()).writePixels(
@@ -329,7 +313,7 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
         if (mMaskFormat == Engine.MASK_FORMAT_A8) {
             // Minecraft's OpenGL backend has no real texture view,
             // but if on Vulkan, we have to modify the VkImageView
-            switch (RenderSystem.getDevice().getDeviceInfo().backendName()) {
+            switch (RenderSystem.getDevice().getBackendName()) {
                 case "OpenGL" -> {
                     int boundTexture = glGetInteger(GL_TEXTURE_BINDING_2D);
                     glBindTexture(GL_TEXTURE_2D, ((GlTexture) texture).glId());
@@ -344,7 +328,7 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
                 }
                 case "Vulkan" -> {
                     if (ModernUIMod.isVulkanBackend()) {
-                        NativeVulkanIntegration.replaceMainImageViewWithSwizzle(textureView, Swizzle.make("111r"));
+                        VulkanModIntegration.replaceMainImageViewWithSwizzle(textureView, Swizzle.make("111r"));
                     }
                 }
             }
@@ -369,17 +353,31 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
                         *//*budgeted*//* true,
                         "FontAtlas" + mMaskFormat
                 ), "Failed to create font atlas");*/
-        return RenderSystem.getDevice().createTexture(
+        GpuTexture result = RenderSystem.getDevice().createTexture(
                 "ModernUI_MC_FontAtlas" + mMaskFormat,
                 GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING,
                 switch (mMaskFormat) {
-                    case Engine.MASK_FORMAT_A8 -> GpuFormat.R8_UNORM;
-                    case Engine.MASK_FORMAT_ARGB -> GpuFormat.RGBA8_UNORM;
+                    case Engine.MASK_FORMAT_A8 -> TextureFormat.RED8;
+                    case Engine.MASK_FORMAT_ARGB -> TextureFormat.RGBA8;
                     default -> throw new AssertionError(mMaskFormat);
                 },
                 mWidth, mHeight,
                 1, mUseMipmaps ? 2 : 1
         );
+        result.setAddressMode(AddressMode.REPEAT);
+        result.setTextureFilter(minFilterFor(mMaskFormat, mLinearSampling),
+                magFilterFor(mMaskFormat), mUseMipmaps);
+        return result;
+    }
+
+    /** Texture-level filtering on 1.21.9/10, shared by every run using the atlas. */
+    public static FilterMode minFilterFor(int maskFormat, boolean linearSampling) {
+        return maskFormat == Engine.MASK_FORMAT_A8 || linearSampling
+                ? FilterMode.LINEAR : FilterMode.NEAREST;
+    }
+
+    public static FilterMode magFilterFor(int maskFormat) {
+        return maskFormat == Engine.MASK_FORMAT_A8 ? FilterMode.LINEAR : FilterMode.NEAREST;
     }
 
     public int getMaskFormat() {
@@ -438,7 +436,7 @@ public class ModernFontAtlas extends AbstractTexture implements Dumpable {
     }
 
     @Override
-    public void dumpContents(@Nonnull Identifier selfId, @Nonnull Path dir) throws IOException {
+    public void dumpContents(@Nonnull ResourceLocation selfId, @Nonnull Path dir) throws IOException {
         GpuTexture texture = this.texture;
         if (texture == null)
             return;

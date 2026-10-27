@@ -18,13 +18,11 @@
 
 package icyllis.modernui.mc;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
@@ -37,14 +35,11 @@ public abstract class GuiRenderType {
             .withLocation(ModernUIMod.location("pipeline/modern_tooltip"))
             .withVertexShader(ModernUIMod.location("core/rendertype_modern_tooltip"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_tooltip"))
-            .withBindGroupLayout(BindGroupLayout.builder()
-                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                    .withUniform("ModernTooltip", UniformType.UNIFORM_BUFFER)
-                    .build())
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
-            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("ModernTooltip", UniformType.UNIFORM_BUFFER)
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
             .build();
 
     /*public static final ShaderProgram SHADER_TOOLTIP = new ShaderProgram(

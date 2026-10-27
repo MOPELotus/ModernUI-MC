@@ -18,7 +18,7 @@
 
 package icyllis.modernui.mc.text.mixin;
 
-import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+import net.minecraft.client.gui.render.state.GuiTextRenderState;
 import net.minecraft.util.FormattedCharSequence;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

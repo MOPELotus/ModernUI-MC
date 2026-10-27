@@ -23,7 +23,7 @@ import icyllis.modernui.annotation.Nullable;
 import icyllis.modernui.graphics.BitmapFactory;
 import icyllis.modernui.graphics.Image;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.ref.WeakReference;
@@ -42,7 +42,7 @@ public class ImageStore implements BiFunction<String, String, Image> {
     private static final ImageStore INSTANCE = new ImageStore();
 
     private final Object mLock = new Object();
-    private HashMap<Identifier, WeakReference<Image>> mImages = new HashMap<>();
+    private HashMap<ResourceLocation, WeakReference<Image>> mImages = new HashMap<>();
 
     private ImageStore() {
     }
@@ -77,7 +77,7 @@ public class ImageStore implements BiFunction<String, String, Image> {
      * @return texture image, null if failed
      */
     @Nullable
-    public Image getOrCreate(@NonNull Identifier location) {
+    public Image getOrCreate(@NonNull ResourceLocation location) {
         synchronized (mLock) {
             var imageRef = mImages.get(location);
             Image image;
@@ -110,12 +110,12 @@ public class ImageStore implements BiFunction<String, String, Image> {
     }
 
     /**
-     * Same as {@link #getOrCreate(Identifier)}.
+     * Same as {@link #getOrCreate(ResourceLocation)}.
      */
     @Nullable
     @Override
     public Image apply(@NonNull String namespace, @NonNull String path) {
-        var location = Identifier.tryBuild(namespace, path);
+        var location = ResourceLocation.tryBuild(namespace, path);
         if (location != null) {
             return getOrCreate(location);
         }

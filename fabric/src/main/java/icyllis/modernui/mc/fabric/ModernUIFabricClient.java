@@ -34,7 +34,7 @@ import net.fabricmc.api.*;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.resource.*;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.ChatFormatting;
@@ -78,12 +78,12 @@ public class ModernUIFabricClient extends ModernUIClient implements ClientModIni
         UIManagerFabric.OPEN_CENTER_KEY = new KeyMapping(
                 "key.modernui.openCenter",
                 InputConstants.Type.KEYSYM, InputConstants.KEY_K, UIManagerFabric.KEYBIND_CATEGORY);
-        KeyMappingHelper.registerKeyMapping(UIManagerFabric.OPEN_CENTER_KEY);
+        KeyBindingHelper.registerKeyBinding(UIManagerFabric.OPEN_CENTER_KEY);
 
         Image.setLegacyFactory(ImageStore.getInstance());
         var resourceLoader = ResourceLoader.get(PackType.CLIENT_RESOURCES);
-        resourceLoader.registerReloadListener(ModernUIMod.location("resources"), ResourcesStore.getInstance());
-        resourceLoader.registerReloadListener(ModernUIMod.location("client"), (ResourceManagerReloadListener) manager -> {
+        resourceLoader.registerReloader(ModernUIMod.location("resources"), ResourcesStore.getInstance());
+        resourceLoader.registerReloader(ModernUIMod.location("client"), (ResourceManagerReloadListener) manager -> {
             Handler handler = Core.getUiHandlerAsync();
             // FML may throw ex, so it can be null
             if (handler != null) {
@@ -147,7 +147,7 @@ public class ModernUIFabricClient extends ModernUIClient implements ClientModIni
                         Minecraft minecraft = Minecraft.getInstance();
                         if ((int) minecraft.getWindow().getGuiScale() !=
                                 minecraft.getWindow().calculateScale(value, false)) {
-                            minecraft.resizeGui();
+                            minecraft.resizeDisplay();
                         }
                     });
                 });
@@ -181,7 +181,7 @@ public class ModernUIFabricClient extends ModernUIClient implements ClientModIni
             LOGGER.info(MARKER, "Initialized Modern UI text engine");
         } else {
             // see MixinFontManager in another case
-            resourceLoader.registerReloadListener(ModernUIMod.location("font"), FontResourceManager.getInstance());
+            resourceLoader.registerReloader(ModernUIMod.location("font"), FontResourceManager.getInstance());
         }
         LOGGER.info(MARKER, "Initialized Modern UI client");
     }

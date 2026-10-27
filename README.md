@@ -47,7 +47,7 @@ Additionally, this Mod provides many utilities which improve game performance an
 * Changing GUI scale option to Slider and providing hint text
 * Playing a "Ding" sound when Minecraft loads and reaches the Main Menu
 * Enabling smooth scrolling in Vanilla's Selection List and Forge's Scroll Panel
-* Pressing "C" to Zoom that is the same as OptiFine
+* Pressing "C" to Zoom on NeoForge, as in OptiFine
 * Undo/Redo and Unicode word iterator for all text fields
 * Playing local music, allowing to seek and view spectrum
 * Support Discord/Slack/GitHub/IamCal/JoyPixels emoji shortcodes in Chatting
@@ -237,6 +237,12 @@ You can also cherry-pick a stable version of Modern UI for Minecraft and build f
 
 When you build ModernUI-MC, the universal jar will contain not only ModernUI-MC itself, but also shadow the
 ModernUI framework and extensions (except Kotlin extensions), as well as additional assets and runtime.
+When building multiple Minecraft branches concurrently, give each version a separate Gradle user home, for example
+`./gradlew -g "$HOME/.gradle-modernui-1.21.10" :common:check :ModernUI-Fabric:build :ModernUI-NeoForge:build`.
+Architectury Loom 1.17.492 publishes generated official mappings under a shared Maven coordinate; sharing its
+cache between different Minecraft versions can mix mappings and invalidate NeoForge inheritance migration.
+Use the same per-version user home for `-Pfont_variant=misans` builds.
+
 ### Screenshots (OUTDATED, see CurseForge/Modrinth or try yourself)
 Center Screen  
 ![2024-03-30_16.17.11.png](https://cdn.modrinth.com/data/3sjzyvGR/images/2571f7372b1f9bbb116c118f29a93255338f4e41.png)
@@ -256,3 +262,5 @@ Audio visualization
 Out-of-date widgets  
 ![a](https://i.loli.net/2020/05/15/fYAow29d4JtqaGu.png)
 ![b](https://i.loli.net/2020/04/10/LDBFc1qo5wtnS8u.png)
+
+Minecraft 1.21.10 stores texture filtering on each atlas: outline/SDF A8 atlases use linear minification and magnification for smooth fractional scrolling, while bitmap and emoji filtering retain their existing settings. Unlike the 1.21.11 per-run sampler path, these versions keep one stable texture-level setting across all runs sharing an atlas.

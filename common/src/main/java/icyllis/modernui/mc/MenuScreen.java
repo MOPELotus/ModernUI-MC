@@ -19,7 +19,7 @@
 package icyllis.modernui.mc;
 
 import icyllis.modernui.fragment.Fragment;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -28,7 +28,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.ClickType;
 import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nonnull;
@@ -67,17 +67,22 @@ public class MenuScreen<T extends @NonNull AbstractContainerMenu>
     }
 
     @Override
-    public void extractBackground(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTick) {
+    public void renderBackground(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTick) {
         ScreenCallback callback = getCallback();
         if (callback == null || callback.hasDefaultBackground()) {
-            super.extractBackground(gr, mouseX, mouseY, deltaTick);
+            super.renderBackground(gr, mouseX, mouseY, deltaTick);
         }
     }
 
     @Override
-    public void extractRenderState(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTick) {
+    protected void renderBg(@Nonnull GuiGraphics gr, float deltaTick, int mouseX, int mouseY) {
+        // The Modern UI surface is rendered by render().
+    }
+
+    @Override
+    public void render(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTick) {
         mHost.render(gr, mouseX, mouseY, deltaTick);
-        super.extractRenderState(gr, mouseX, mouseY, deltaTick);
+        super.render(gr, mouseX, mouseY, deltaTick);
     }
 
     @Override
@@ -165,10 +170,10 @@ public class MenuScreen<T extends @NonNull AbstractContainerMenu>
         }
         if (hoveredSlot != null && hoveredSlot.hasItem()) {
             if (minecraft.options.keyPickItem.matches(event)) {
-                slotClicked(hoveredSlot, hoveredSlot.index, 0, ContainerInput.CLONE);
+                slotClicked(hoveredSlot, hoveredSlot.index, 0, ClickType.CLONE);
                 return true;
             } else if (minecraft.options.keyDrop.matches(event)) {
-                slotClicked(hoveredSlot, hoveredSlot.index, event.hasControlDown() ? 1 : 0, ContainerInput.THROW);
+                slotClicked(hoveredSlot, hoveredSlot.index, event.hasControlDown() ? 1 : 0, ClickType.THROW);
                 return true;
             }
         }

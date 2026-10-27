@@ -29,7 +29,7 @@ import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 public class MuiTextCommand {
 
