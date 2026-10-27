@@ -1,6 +1,18 @@
 {
     "pack": {
         "description": "Modern UI for Minecraft",
-        "pack_format": 75
+        "min_format": [
+            64,
+            0
+        ],
+        "max_format": [
+            94,
+            1
+        ],
+        "supported_formats": [
+            64,
+            94
+        ],
+        "pack_format": 64
     }
 }
