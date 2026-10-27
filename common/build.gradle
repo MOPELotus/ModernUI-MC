@@ -79,12 +79,13 @@ tasks.register('checkFontVariant', JavaExec) {
 }
 check.dependsOn checkFontVariant
 
-['TooltipUniform', 'GlfwInput'].each { checkName ->
+['TooltipUniform', 'GlfwInput', 'PackMetadata'].each { checkName ->
     def checkTask = tasks.register("check${checkName}", JavaExec) {
         group = 'verification'
         dependsOn testClasses
         classpath = sourceSets.test.runtimeClasspath
         mainClass = "icyllis.modernui.mc.test.${checkName}Check"
+        systemProperty 'modernui.projectRoot', rootProject.projectDir.absolutePath
     }
     check.dependsOn checkTask
 }
