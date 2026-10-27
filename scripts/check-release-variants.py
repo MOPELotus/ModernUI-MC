@@ -52,7 +52,11 @@ for loader in loaders:
                           'MixinVulkanImage', 'MixinVulkanRenderer',
                           'MixinGpuBufferPoolAddress', 'MixinParcelBufferFree',
                           'MixinVulkanBindingBufferFree', 'MixinVulkanLongBufferFree',
-                          'MixinWindowsWindowBorderAbi'):
+                          'MixinWindowsWindowBorderAbi', 'AccessVulkanPipelines',
+                          'MixinVulkanPipelineLifecycle', 'MixinVulkanGpuDeviceOwnership',
+                          'MixinVulkanGpuResourceOwnership', 'MixinVulkanCloudOwnership',
+                          'MixinVulkanImageUpload', 'AccessVulkanGlFramebuffer',
+                          'MixinVulkanCommandEncoderOwnership'):
                 assert mixin in mixins['client'], (name, 'unregistered compatibility Mixin', mixin)
                 assert f'icyllis/modernui/mc/mixin/{mixin}.class' in entries, (name, mixin)
             if loader == 'neoforge':
