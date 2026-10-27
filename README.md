@@ -97,6 +97,8 @@ export GRADLE_USER_HOME="$HOME/.gradle-modernui-$mc_version"
 
 Copy the first build's final `*-universal.jar` files before the second `clean`; the MiSans files end in `-universal-misans.jar`. Final remapped artifacts are under `fabric/build/libs` and `neoforge/build/libs`; use these instead of `-shadow.jar` or development JARs. See [font editions](docs/font-editions.md) for configuration migration and packaging details.
 
+Version-specific tooltip uniform layouts, input signatures and sampling adaptations are documented in [backport API notes](docs/backport-api-notes.md).
+
 ### Historical release compatibility
 | Minecraft version | Status     | Latest Modern UI version | Mod loaders             | Rendering backend       |
 |-------------------|------------|--------------------------|-------------------------|-------------------------|
