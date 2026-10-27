@@ -45,10 +45,10 @@ public class MusicFragment extends Fragment {
     private SpectrumDrawable mSpectrumDrawable;
 
     private Button mTitleButton;
-    private Button mPlayButton;
+    private MusicControlButton mPlayButton;
     private SeekLayout mSeekLayout;
 
-    private Button mMuteButton;
+    private MusicControlButton mMuteButton;
     private SeekBar mVolumeBar;
 
     @Override
@@ -67,9 +67,9 @@ public class MusicFragment extends Fragment {
                         mSpectrumDrawable::updateAmplitudes
                 );
                 track.play();
-                mPlayButton.setText("\u23F8");
+                updatePlayButton();
             } else {
-                mPlayButton.setText("\u23F5");
+                updatePlayButton();
                 Toast.makeText(requireContext(),
                         "Failed to open Ogg Vorbis file", Toast.LENGTH_SHORT).show();
             }
@@ -125,26 +125,19 @@ public class MusicFragment extends Fragment {
                 }
 
                 {
-                    var button = new Button(context, null, R.attr.borderlessButtonStyle);
+                    var button = new MusicControlButton(context);
                     button.setOnClickListener(v -> {
-                        var btn = (Button) v;
                         if (mMusicPlayer.isPlaying()) {
                             mMusicPlayer.pause();
-                            btn.setText("\u23F5");
                         } else {
                             mMusicPlayer.play();
-                            btn.setText("\u23F8");
                         }
+                        updatePlayButton();
                     });
-                    if (mMusicPlayer.isPlaying()) {
-                        button.setText("\u23F8");
-                    } else {
-                        button.setText("\u23F5");
-                    }
-                    button.setTextSize(24f);
                     button.setPadding(0, 0, 0, 0);
                     button.setMinWidth(button.dp(160));
                     mPlayButton = button;
+                    updatePlayButton();
 
                     row.addView(button, WRAP_CONTENT, WRAP_CONTENT);
                 }
@@ -154,9 +147,8 @@ public class MusicFragment extends Fragment {
                     seekLayout.setOrientation(LinearLayout.HORIZONTAL);
                     seekLayout.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
 
-                    var button = new Button(context, null, R.attr.borderlessButtonStyle);
+                    var button = new MusicControlButton(context);
                     {
-                        button.setTextSize(18);
                         var dp52 = seekLayout.dp(52);
                         button.setMinWidth(dp52);
                         button.setMinimumWidth(dp52);
@@ -270,6 +262,7 @@ public class MusicFragment extends Fragment {
     private void updateProgress() {
         if (mSeekLayout == null)
             return;
+        updatePlayButton();
         if (mMusicPlayer.isPlaying()) {
             float time = mMusicPlayer.getTrackTime();
             float length = mMusicPlayer.getTrackLength();
@@ -280,10 +273,77 @@ public class MusicFragment extends Fragment {
         mSeekLayout.postDelayed(this::updateProgress, 200);
     }
 
+    private void updatePlayButton() {
+        mPlayButton.setControlIcon(mMusicPlayer.isPlaying() ? MusicControlButton.PAUSE : MusicControlButton.PLAY);
+    }
+
     private void updateMuteButton() {
-        String text = mMusicPlayer.getGain() != 0f ? "\uD83D\uDD0A\uFE0E" : "\uD83D\uDD07\uFE0E";
-        if (!mMuteButton.getText().equals(text)) {
-            mMuteButton.setText(text);
+        mMuteButton.setControlIcon(mMusicPlayer.getGain() != 0f ? MusicControlButton.VOLUME : MusicControlButton.MUTED);
+    }
+
+    /** Transport controls must remain visible independently of font and emoji support. */
+    private static final class MusicControlButton extends Button {
+        static final int PLAY = 0, PAUSE = 1, VOLUME = 2, MUTED = 3;
+        private int mControlIcon = -1;
+        private final float[] mQuad = new float[8];
+
+        MusicControlButton(Context context) {
+            super(context, null, R.attr.borderlessButtonStyle);
+        }
+
+        void setControlIcon(int icon) {
+            if (mControlIcon == icon) return;
+            mControlIcon = icon;
+            setContentDescription(switch (icon) {
+                case PAUSE -> "Pause playback";
+                case VOLUME -> "Mute";
+                case MUTED -> "Unmute";
+                default -> "Play music";
+            });
+            invalidate();
+        }
+
+        @Override
+        protected void onDraw(@NonNull Canvas canvas) {
+            super.onDraw(canvas);
+            Paint paint = Paint.obtain();
+            // Use the Button's stateful theme color, including its disabled tint.
+            paint.setColor(getCurrentTextColor());
+            canvas.save();
+            float scale = dp(24) / 24f;
+            canvas.translate((getWidth() - dp(24)) / 2f, (getHeight() - dp(24)) / 2f);
+            canvas.scale(scale, scale);
+            switch (mControlIcon) {
+                case PLAY -> drawQuad(canvas, paint, 8, 5, 19, 12, 8, 19, 8, 5);
+                case PAUSE -> {
+                    canvas.drawRect(6, 5, 10, 19, paint);
+                    canvas.drawRect(14, 5, 18, 19, paint);
+                }
+                case VOLUME, MUTED -> {
+                    canvas.drawRect(3, 9, 8, 15, paint);
+                    drawQuad(canvas, paint, 7, 9, 13, 5, 13, 19, 7, 15);
+                    paint.setStrokeWidth(2);
+                    paint.setStrokeCap(Paint.CAP_ROUND);
+                    if (mControlIcon == MUTED) {
+                        canvas.drawLine(17, 9, 22, 15, paint);
+                        canvas.drawLine(17, 15, 22, 9, paint);
+                    } else {
+                        paint.setStyle(Paint.STROKE);
+                        canvas.drawArc(12, 12, 5, -50, 100, paint);
+                        canvas.drawArc(12, 12, 9, -50, 100, paint);
+                    }
+                }
+            }
+            canvas.restore();
+            paint.recycle();
+        }
+
+        private void drawQuad(Canvas canvas, Paint paint, float x0, float y0, float x1, float y1,
+                              float x2, float y2, float x3, float y3) {
+            mQuad[0] = x0; mQuad[1] = y0; mQuad[2] = x1; mQuad[3] = y1;
+            mQuad[4] = x2; mQuad[5] = y2; mQuad[6] = x3; mQuad[7] = y3;
+            canvas.drawEdgeAAQuad(null, mQuad, 0, Canvas.EDGE_AA_FLAG_LEFT | Canvas.EDGE_AA_FLAG_TOP |
+                    Canvas.EDGE_AA_FLAG_RIGHT | Canvas.EDGE_AA_FLAG_BOTTOM, paint);
         }
     }
 
