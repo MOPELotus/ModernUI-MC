@@ -26,7 +26,7 @@ import icyllis.modernui.mc.mixin.AccessClientTextTooltip;
 import icyllis.modernui.mc.text.CharacterStyle;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.screens.inventory.tooltip.*;
@@ -525,7 +525,7 @@ public final class TooltipRenderer implements ScrollController.IListener {
         return uniform.set(r / 255f, g / 255f, b / 255f, a / 255f);
     }
 
-    public void drawTooltip(@Nonnull ItemStack itemStack, @Nonnull GuiGraphicsExtractor gr,
+    public void drawTooltip(@Nonnull ItemStack itemStack, @Nonnull GuiGraphics gr,
                             @Nonnull List<ClientTooltipComponent> list, int mouseX, int mouseY,
                             @Nonnull Font font, int screenWidth, int screenHeight,
                             float partialX, float partialY, @Nullable ClientTooltipPositioner positioner,
@@ -697,17 +697,17 @@ public final class TooltipRenderer implements ScrollController.IListener {
 
         gr.pose().translate(partialX, partialY);
         if (tooltipStyle != null) {
-            TooltipRenderUtil.extractTooltipBackground(gr, drawX, drawY,
+            TooltipRenderUtil.renderTooltipBackground(gr, drawX, drawY,
                     tooltipWidth, tooltipHeight, tooltipStyle);
         }
         for (int i = 0; i < list.size(); i++) {
             ClientTooltipComponent component = list.get(i);
             if (titleGap && i == 0 && sCenterTitle) {
-                component.extractText(gr, font, drawX + (tooltipWidth - component.getWidth(font)) / 2, drawY);
+                component.renderText(gr, font, drawX + (tooltipWidth - component.getWidth(font)) / 2, drawY);
             } else if (mLayoutRTL) {
-                component.extractText(gr, font, drawX + tooltipWidth - component.getWidth(font), drawY);
+                component.renderText(gr, font, drawX + tooltipWidth - component.getWidth(font), drawY);
             } else {
-                component.extractText(gr, font, drawX, drawY);
+                component.renderText(gr, font, drawX, drawY);
             }
             if (titleGap && i == 0) {
                 drawY += TITLE_GAP;
@@ -721,9 +721,9 @@ public final class TooltipRenderer implements ScrollController.IListener {
         for (int i = 0; i < list.size(); i++) {
             ClientTooltipComponent component = list.get(i);
             if (mLayoutRTL) {
-                component.extractImage(font, drawX + tooltipWidth - component.getWidth(font), drawY, tooltipWidth, tooltipHeight, gr);
+                component.renderImage(font, drawX + tooltipWidth - component.getWidth(font), drawY, tooltipWidth, tooltipHeight, gr);
             } else {
-                component.extractImage(font, drawX, drawY, tooltipWidth, tooltipHeight, gr);
+                component.renderImage(font, drawX, drawY, tooltipWidth, tooltipHeight, gr);
             }
             if (titleGap && i == 0) {
                 drawY += TITLE_GAP;
@@ -733,7 +733,7 @@ public final class TooltipRenderer implements ScrollController.IListener {
         gr.pose().popMatrix();
     }
 
-    private void drawRoundedBackground(@Nonnull GuiGraphicsExtractor gr, Matrix3x2f pose,
+    private void drawRoundedBackground(@Nonnull GuiGraphics gr, Matrix3x2f pose,
                                        ScreenRectangle scissor,
                                        float tooltipX, float tooltipY,
                                        int tooltipWidth, int tooltipHeight,
@@ -810,7 +810,7 @@ public final class TooltipRenderer implements ScrollController.IListener {
         }
     }
 
-    private void drawVanillaBackground(@Nonnull GuiGraphicsExtractor gr, Matrix3x2f pose,
+    private void drawVanillaBackground(@Nonnull GuiGraphics gr, Matrix3x2f pose,
                                        ScreenRectangle scissor,
                                        float tooltipX, float tooltipY,
                                        int tooltipWidth, int tooltipHeight,
@@ -865,7 +865,7 @@ public final class TooltipRenderer implements ScrollController.IListener {
                 chooseBorderColor(3), chooseBorderColor(3));
     }
 
-    private static void fillGrad(GuiGraphicsExtractor gr, Matrix3x2f pose, ScreenRectangle scissor,
+    private static void fillGrad(GuiGraphics gr, Matrix3x2f pose, ScreenRectangle scissor,
                                  float left, float top, float right, float bottom,
                                  int colorUL, int colorUR, int colorLR, int colorLL) {
         MuiModApi.get().submitGuiElementRenderState(gr,

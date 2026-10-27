@@ -102,7 +102,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
         if (!minecraft.isSameThread()) {
             throw new IllegalStateException("Not called from main thread");
         }
-        minecraft.gui.setScreen(new SimpleScreen(fragment, null, null, CommonComponents.EMPTY));
+        minecraft.setScreen(new SimpleScreen(fragment, null, null, CommonComponents.EMPTY));
     }
 
     @Override
@@ -116,7 +116,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                 onHoverMove(false);
             }
             // for non-mui screens
-            if (mScreen == null && minecraft.gui.screen() == null) {
+            if (mScreen == null && minecraft.screen == null) {
                 //mTicks = 0;
                 mElapsedTimeMillis = 0;
             }
@@ -137,7 +137,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
     @Override
     protected void onPreKeyInput(int action, KeyEvent event) {
         if (action == GLFW_PRESS) {
-            Screen screen = minecraft.gui.screen();
+            Screen screen = minecraft.screen;
             if (screen == null ||
                     screen.shouldCloseOnEsc() ||
                     screen instanceof TitleScreen) {
@@ -179,7 +179,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
                     long width = tex.getWidth(0);
                     long height = tex.getHeight(0);
                     int mipLevels = tex.getMipLevels();
-                    int bpp = tex.getFormat().blockSize();
+                    int bpp = tex.getFormat().pixelSize();
                     long size = width * height * bpp;
                     if (mipLevels > 1) {
                         size = ((size - (size >> (mipLevels << 1))) << 2) / 3;
@@ -300,7 +300,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
     @SubscribeEvent
     void onChangeFov(@Nonnull ViewportEvent.ComputeFov event) {
         boolean zoomActive = false;
-        if (sZoomEnabled && minecraft.gui.screen() == null) {
+        if (sZoomEnabled && minecraft.screen == null) {
             zoomActive = ZOOM_KEY.isDown();
         }
         if (zoomActive) {
@@ -322,12 +322,7 @@ public final class UIManagerForge extends UIManager implements LifecycleOwner {
 
     private void invalidateLevelGeometry() {
         if (minecraft.level != null) {
-            minecraft.levelRenderer.invalidateCompiledGeometry(
-                    minecraft.level,
-                    minecraft.options,
-                    minecraft.gameRenderer.mainCamera(),
-                    minecraft.getBlockColors()
-            );
+            minecraft.levelRenderer.allChanged();
         }
     }
 

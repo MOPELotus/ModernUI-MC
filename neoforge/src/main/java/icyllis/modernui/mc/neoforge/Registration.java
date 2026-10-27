@@ -280,7 +280,7 @@ final class Registration {
                         Minecraft minecraft = Minecraft.getInstance();
                         if ((int) minecraft.getWindow().getGuiScale() !=
                                 minecraft.getWindow().calculateScale(value, false)) {
-                            minecraft.resizeGui();
+                            minecraft.resizeDisplay();
                         }
                     });
                 });

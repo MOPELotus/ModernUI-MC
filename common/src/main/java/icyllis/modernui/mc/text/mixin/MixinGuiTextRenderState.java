@@ -24,7 +24,7 @@ import icyllis.modernui.mc.text.TextLayout;
 import icyllis.modernui.mc.text.TextLayoutEngine;
 import icyllis.modernui.mc.text.TextRenderType;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
+import net.minecraft.client.gui.render.state.GuiTextRenderState;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2fc;
 import org.spongepowered.asm.mixin.Final;

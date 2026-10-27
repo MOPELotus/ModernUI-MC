@@ -18,7 +18,6 @@
     "MixinFramerateLimitTracker",
     "MixinGameRenderer",
     "MixinGraniteText",
-    "MixinGui",
     "MixinGuiGraphics",
     "MixinGuiRenderer",
     "MixinInventoryScreen",

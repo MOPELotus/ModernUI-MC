@@ -19,7 +19,7 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.renderer.LightTexture;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4fc;
 
@@ -94,19 +94,19 @@ public class TextRenderEffect {
         builder.addVertexWith2DPose(pose, start, baseline + UNDERLINE_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U0, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline + UNDERLINE_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U1, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U1, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, start, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U0, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
     }
 
     public static void drawUnderline(@Nonnull Matrix4fc matrix, @Nonnull VertexConsumer builder,
@@ -138,19 +138,19 @@ public class TextRenderEffect {
         builder.addVertexWith2DPose(pose, start, baseline + STRIKETHROUGH_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U0, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline + STRIKETHROUGH_THICKNESS)
                 .setColor(r, g, b, a)
                 .setUv(U1, V1)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, end, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U1, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
         builder.addVertexWith2DPose(pose, start, baseline)
                 .setColor(r, g, b, a)
                 .setUv(U0, V0)
-                .setLight(LightCoordsUtil.FULL_BRIGHT);
+                .setLight(LightTexture.FULL_BRIGHT);
     }
 
     public static void drawStrikethrough(@Nonnull Matrix4fc matrix, @Nonnull VertexConsumer builder,

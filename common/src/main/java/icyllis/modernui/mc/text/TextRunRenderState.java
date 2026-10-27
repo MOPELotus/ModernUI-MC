@@ -23,15 +23,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.LightTexture;
 import org.joml.Matrix3x2fc;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Similar to {@link net.minecraft.client.renderer.state.gui.GlyphRenderState}.
+ * Similar to {@link net.minecraft.client.gui.render.state.GlyphRenderState}.
  *
  * @param isColorEmoji whether the run is color emoji
  * @param isDirectMask whether the whole text uses normal or uniform scale
@@ -175,19 +175,19 @@ public record TextRunRenderState(
             builder.addVertexWith2DPose(pose, rx + upSkew, ry)
                     .setColor(r, g, b, a)
                     .setUv(u1, v1)
-                    .setLight(LightCoordsUtil.FULL_BRIGHT);
+                    .setLight(LightTexture.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + downSkew, ry + h)
                     .setColor(r, g, b, a)
                     .setUv(u1, v2)
-                    .setLight(LightCoordsUtil.FULL_BRIGHT);
+                    .setLight(LightTexture.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + w + downSkew, ry + h)
                     .setColor(r, g, b, a)
                     .setUv(u2, v2)
-                    .setLight(LightCoordsUtil.FULL_BRIGHT);
+                    .setLight(LightTexture.FULL_BRIGHT);
             builder.addVertexWith2DPose(pose, rx + w + upSkew, ry)
                     .setColor(r, g, b, a)
                     .setUv(u2, v1)
-                    .setLight(LightCoordsUtil.FULL_BRIGHT);
+                    .setLight(LightTexture.FULL_BRIGHT);
         }
     }
 

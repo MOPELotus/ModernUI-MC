@@ -4,7 +4,7 @@
     "srcrgb": "srcalpha",
     "dstrgb": "1-srcalpha"
   },
-  "vertex": "minecraft:core/text",
+  "vertex": "minecraft:core/rendertype_text_intensity",
   "fragment": "modernui:rendertype_modern_text_glow",
   "attributes": [
     "Position",

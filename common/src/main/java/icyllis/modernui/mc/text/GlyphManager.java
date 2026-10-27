@@ -19,7 +19,6 @@
 package icyllis.modernui.mc.text;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.Transparency;
 import icyllis.arc3d.engine.Engine;
 import icyllis.modernui.annotation.RenderThread;
 import icyllis.modernui.graphics.Bitmap;
@@ -629,8 +628,7 @@ public class GlyphManager {
                                 false, src)},
                         1,
                         MipmapStrategy.MEAN,
-                        0,
-                        Transparency.TRANSPARENT_AND_TRANSLUCENT
+                        0
                 );
                 glyph.x = 0;
                 glyph.y = -EMOJI_ASCENT;

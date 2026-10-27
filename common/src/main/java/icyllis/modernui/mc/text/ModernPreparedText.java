@@ -33,8 +33,8 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.gui.GlyphRenderState;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.gui.render.state.GlyphRenderState;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.ARGB;
@@ -309,7 +309,7 @@ public class ModernPreparedText implements Font.PreparedText {
     public void submitRuns(GuiRenderState renderState, Matrix3x2fc pose,
                            @Nullable ScreenRectangle scissor) {
         boolean linearSampling = TextSampling.needsLinear(pose, this.x, this.top,
-                density, Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState.guiScale);
+                density, Minecraft.getInstance().getWindow().getGuiScale());
         float x = this.x;
         float top = this.top;
         if (xAdj != 0 || yAdj != 0) {
@@ -322,7 +322,7 @@ public class ModernPreparedText implements Font.PreparedText {
         }
         if ((bgColor & 0xFF000000) != 0) {
             // this is only used by CartographyTableScreen, emit as normal fills
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new GradientRectangleRenderState(
                             RenderPipelines.GUI,
                             TextureSetup.noTexture(),
@@ -335,14 +335,14 @@ public class ModernPreparedText implements Font.PreparedText {
             );
         }
         for (int i = 0; i < customRenderables.size(); i++) {
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new GlyphRenderState(pose, customRenderables.get(i), scissor)
             );
         }
         // For-index is 2x faster than enhanced-for
         for (int i = 0; i < runs.size(); i++) {
             var run = runs.get(i);
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new TextRunRenderState(pose, run.pipeline,
                             TextureSetup.singleTextureWithLightmap(run.textureView,
                                     linearSampling && run.isDirectMask && !run.isColorEmoji && !run.isBitmapFont
@@ -357,7 +357,7 @@ public class ModernPreparedText implements Font.PreparedText {
             );
         }
         if (hasEffect) {
-            renderState.addGlyphToCurrentLayer(
+            renderState.submitGlyphToCurrentLayer(
                     new TextEffectRenderState(pose,
                             scissor,
                             x, top, color, dropShadow,

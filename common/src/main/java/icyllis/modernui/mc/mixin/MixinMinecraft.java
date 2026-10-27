@@ -28,6 +28,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
 
+    @org.spongepowered.asm.mixin.Shadow
+    @javax.annotation.Nullable
+    public net.minecraft.client.gui.screens.Screen screen;
+
+    @Inject(method = "setScreen", at = @At(value = "FIELD",
+            target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
+            opcode = org.objectweb.asm.Opcodes.PUTFIELD))
+    private void onSetScreen(net.minecraft.client.gui.screens.Screen newScreen, CallbackInfo ci) {
+        MuiModApi.dispatchOnScreenChange(screen, newScreen);
+    }
+
     /*@Shadow
     @Final
     private Window window;
@@ -69,8 +80,8 @@ public abstract class MixinMinecraft {
         }
     }
 
-    @Inject(method = "renderFrame", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/DeltaTracker$Timer;advanceRealTime(J)V"))
+    @Inject(method = "runTick", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/DeltaTracker$Timer;advanceTime(JZ)I"))
     private void onStartRenderFrameUpdate(boolean advanceGameTime, CallbackInfo ci) {
         if (icyllis.modernui.mc.FontVariant.MISANS) {
             icyllis.modernui.mc.MiSansSetup.tick((net.minecraft.client.Minecraft) (Object) this);
@@ -78,20 +89,14 @@ public abstract class MixinMinecraft {
         MuiModApi.dispatchOnRenderFrame(0, MuiModApi.RENDER_STAGE_UPDATE);
     }
 
-    @Inject(method = "renderFrame", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/renderer/GameRenderer;extract(Lnet/minecraft/client/DeltaTracker;Z)V"))
-    private void onStartRenderFrameExtract(boolean advanceGameTime, CallbackInfo ci) {
-        MuiModApi.dispatchOnRenderFrame(0, MuiModApi.RENDER_STAGE_EXTRACT);
-    }
-
-    @Inject(method = "renderFrame", at = @At(value = "INVOKE",
+    @Inject(method = "runTick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/renderer/GameRenderer;render(Lnet/minecraft/client/DeltaTracker;Z)V"))
     private void onStartRenderFrameRender(boolean advanceGameTime, CallbackInfo ci) {
         MuiModApi.dispatchOnRenderFrame(0, MuiModApi.RENDER_STAGE_RENDER);
     }
 
-    @Inject(method = "renderFrame", at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/systems/RenderSystem;flipFrame(Lcom/mojang/blaze3d/TracyFrameCapture;)V"))
+    @Inject(method = "runTick", at = @At(value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/platform/Window;updateDisplay(Lcom/mojang/blaze3d/TracyFrameCapture;)V"))
     private void onStartRenderFramePresent(boolean advanceGameTime, CallbackInfo ci) {
         MuiModApi.dispatchOnRenderFrame(0, MuiModApi.RENDER_STAGE_PRESENT);
     }

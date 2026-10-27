@@ -23,7 +23,7 @@ import icyllis.modernui.mc.BlurHandler;
 import icyllis.modernui.mc.UIManager;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.state.GameRenderState;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -45,7 +45,7 @@ public class MixinGameRenderer {
 
     @Shadow
     @Final
-    private GameRenderState gameRenderState;
+    private GuiRenderState guiRenderState;
 
     @Inject(method = "processBlurEffect", at = @At("HEAD"), cancellable = true)
     private void onProcessBlurEffect(CallbackInfo ci) {
@@ -57,16 +57,16 @@ public class MixinGameRenderer {
 
     @ModifyArg(method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlobalSettingsUniform;update" +
-                    "(IIDJLnet/minecraft/client/DeltaTracker;ILnet/minecraft/world/phys/Vec3;Z)V"),
+                    "(IIDJLnet/minecraft/client/DeltaTracker;ILnet/minecraft/client/Camera;Z)V"),
             index = 5)
     private int onGetBlurRadius(int option) {
         return BlurHandler.INSTANCE.getBlurRadius(option);
     }
 
-    @Inject(method = "extractGui",
+    @Inject(method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getToastManager()" +
                     "Lnet/minecraft/client/gui/components/toasts/ToastManager;"))
-    private void onRenderToasts(DeltaTracker deltaTracker, boolean shouldRenderLevel, boolean resourcesLoaded, CallbackInfo ci) {
-        UIManager.getInstance().renderAbove(gameRenderState.guiRenderState);
+    private void onRenderToasts(DeltaTracker deltaTracker, boolean shouldRenderLevel, CallbackInfo ci) {
+        UIManager.getInstance().renderAbove(guiRenderState);
     }
 }

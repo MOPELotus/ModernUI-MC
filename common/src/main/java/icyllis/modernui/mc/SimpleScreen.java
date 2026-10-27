@@ -19,7 +19,7 @@
 package icyllis.modernui.mc;
 
 import icyllis.modernui.fragment.Fragment;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -62,11 +62,11 @@ public class SimpleScreen extends Screen implements MuiScreen {
     }
 
     @Override
-    public void extractBackground(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTick) {
+    public void renderBackground(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTick) {
         ScreenCallback callback = getCallback();
         if (callback == null || callback.hasDefaultBackground()) {
             if (minecraft != null && minecraft.level == null) {
-                super.extractBackground(gr, mouseX, mouseY, deltaTick);
+                super.renderBackground(gr, mouseX, mouseY, deltaTick);
             } else {
                 BlurHandler.INSTANCE.drawScreenBackground(gr, 0, 0, this.width, this.height);
             }
@@ -74,9 +74,9 @@ public class SimpleScreen extends Screen implements MuiScreen {
     }
 
     @Override
-    public void extractRenderState(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTick) {
+    public void render(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTick) {
         mHost.render(gr, mouseX, mouseY, deltaTick);
-        super.extractRenderState(gr, mouseX, mouseY, deltaTick);
+        super.render(gr, mouseX, mouseY, deltaTick);
     }
 
     @Override

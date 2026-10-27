@@ -21,7 +21,7 @@ package icyllis.modernui.mc.mixin;
 import icyllis.modernui.mc.MuiModApi;
 import icyllis.modernui.mc.ScrollController;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.network.chat.Component;
@@ -36,8 +36,8 @@ import javax.annotation.Nullable;
 @Mixin(AbstractSelectionList.class)
 public abstract class MixinSelectionList extends AbstractContainerWidget implements ScrollController.IListener {
 
-    public MixinSelectionList(int x, int y, int width, int height, Component message, ScrollbarSettings scrollbarSettings) {
-        super(x, y, width, height, message, scrollbarSettings);
+    public MixinSelectionList(int x, int y, int width, int height, Component message) {
+        super(x, y, width, height, message);
     }
 
     @Shadow
@@ -74,8 +74,8 @@ public abstract class MixinSelectionList extends AbstractContainerWidget impleme
         return false;
     }
 
-    @Inject(method = "extractWidgetRenderState", at = @At("HEAD"))
-    private void preRender(GuiGraphicsExtractor gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+    @Inject(method = "renderWidget", at = @At("HEAD"))
+    private void preRender(GuiGraphics gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         if (modernUI_MC$scrollController == null) {
             modernUI_MC$scrollController = new ScrollController(this);
             modernUI_MC$skipAnimationTo(scrollAmount());
@@ -83,28 +83,28 @@ public abstract class MixinSelectionList extends AbstractContainerWidget impleme
         modernUI_MC$scrollController.update(MuiModApi.getElapsedTime());
     }
 
-    /*@Inject(method = "extractWidgetRenderState", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;extractListBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"))
-    private void preRenderHeader(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+    /*@Inject(method = "renderWidget", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;renderListBackground(Lnet/minecraft/client/gui/GuiGraphics;)V"))
+    private void preRenderHeader(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         gr.pose().pushMatrix();
         gr.pose().translate(0,
                 ((int) (((int) scrollAmount() - scrollAmount()) * (float) minecraft.getWindow().getGuiScale())) / (float) minecraft.getWindow().getGuiScale());
     }
 
-    @Inject(method = "extractWidgetRenderState", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;extractListBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"))
-    private void postRenderHeader(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float partialTicks,
+    @Inject(method = "renderWidget", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;renderListBackground(Lnet/minecraft/client/gui/GuiGraphics;)V"))
+    private void postRenderHeader(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float partialTicks,
                                   CallbackInfo ci) {
         gr.pose().popMatrix();
     }*/
 
-    @Inject(method = "extractWidgetRenderState", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;extractListItems(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
-    private void preRenderList(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+    @Inject(method = "renderWidget", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;renderListItems(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
+    private void preRenderList(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         gr.pose().pushMatrix();
         gr.pose().translate(0,
                 ((int) (((int) scrollAmount() - scrollAmount()) * (float) minecraft.getWindow().getGuiScale())) / (float) minecraft.getWindow().getGuiScale());
     }
 
-    @Inject(method = "extractWidgetRenderState", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;extractListItems(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
-    private void postRenderList(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+    @Inject(method = "renderWidget", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/components/AbstractSelectionList;renderListItems(Lnet/minecraft/client/gui/GuiGraphics;IIF)V"))
+    private void postRenderList(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         gr.pose().popMatrix();
     }
 

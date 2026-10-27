@@ -20,26 +20,26 @@ package icyllis.modernui.mc.text.mixin;
 
 import icyllis.modernui.mc.text.ModernTextRenderer;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.contextualbar.ContextualBar;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.contextualbar.ContextualBarRenderer;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(ContextualBar.class)
+@Mixin(ContextualBarRenderer.class)
 public interface MixinContextualBar {
 
     @Redirect(
-            method = "extractExperienceLevel",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text" +
+            method = "renderExperienceLevel",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString" +
                     "(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)V")
     )
-    private static void drawExperience(GuiGraphicsExtractor gr, Font font, Component text, int x, int y, int color,
+    private static void drawExperience(GuiGraphics gr, Font font, Component text, int x, int y, int color,
                                        boolean dropShadow) {
         if (!ModernTextRenderer.sTweakExperienceText) {
-            gr.text(font, text, x, y, color, dropShadow);
+            gr.drawString(font, text, x, y, color, dropShadow);
             return;
         }
         // the first four drawString() are black, and the last one is green
@@ -49,21 +49,21 @@ public interface MixinContextualBar {
             Matrix3x2fStack pose = gr.pose();
             pose.pushMatrix()
                     .translate(offset, 0);
-            gr.text(font, text, x, y, 0xFF000000, dropShadow);
+            gr.drawString(font, text, x, y, 0xFF000000, dropShadow);
             pose.popMatrix();
             pose.pushMatrix()
                     .translate(-offset, 0);
-            gr.text(font, text, x, y, 0xFF000000, dropShadow);
+            gr.drawString(font, text, x, y, 0xFF000000, dropShadow);
             pose.popMatrix();
             pose.pushMatrix()
                     .translate(0, offset);
-            gr.text(font, text, x, y, 0xFF000000, dropShadow);
+            gr.drawString(font, text, x, y, 0xFF000000, dropShadow);
             pose.popMatrix();
             pose.pushMatrix()
                     .translate(0, -offset);
-            gr.text(font, text, x, y, 0xFF000000, dropShadow);
+            gr.drawString(font, text, x, y, 0xFF000000, dropShadow);
             pose.popMatrix();
-            gr.text(font, text, x, y, 0xFF000000 | color, dropShadow);
+            gr.drawString(font, text, x, y, 0xFF000000 | color, dropShadow);
         }
     }
 }

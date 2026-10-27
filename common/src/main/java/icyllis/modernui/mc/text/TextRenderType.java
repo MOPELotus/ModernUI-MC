@@ -18,17 +18,14 @@
 
 package icyllis.modernui.mc.text;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import icyllis.modernui.mc.ModernUIMod;
 import icyllis.modernui.mc.MuiModApi;
 import net.minecraft.client.gui.Font;
@@ -39,7 +36,6 @@ import net.minecraft.resources.Identifier;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
-import java.util.Optional;
 
 /**
  * Fast and modern text render type.
@@ -59,60 +55,58 @@ public abstract class TextRenderType {
     public static final int MODE_UNIFORM_SCALE = 4; // <- must be power of 2
 
     public static final RenderPipeline.Snippet PIPELINE_SNIPPET = RenderPipeline.builder()
-            .withVertexShader(Identifier.withDefaultNamespace("core/text"))
+            .withVertexShader(Identifier.withDefaultNamespace("core/rendertype_text_intensity"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_text_normal"))
-            .withBindGroupLayout(BindGroupLayout.builder()
-                    .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                    .withSampler("Sampler0")
-                    .withSampler("Sampler2")
-                    .build())
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
-            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withSampler("Sampler2")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .buildSnippet();
 
     public static final RenderPipeline PIPELINE_NORMAL = RenderPipeline.builder(PIPELINE_SNIPPET)
             .withLocation(ModernUIMod.location("pipeline/modern_text_normal"))
-            .withDepthStencilState(DepthStencilState.DEFAULT)
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
             .build();
 
     public static final RenderPipeline PIPELINE_GUI_NORMAL = RenderPipeline.builder(PIPELINE_SNIPPET)
             .withLocation(ModernUIMod.location("pipeline/modern_text_gui_normal"))
-            .withDepthStencilState(Optional.empty())
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthWrite(false)
             .build();
 
     public static final RenderPipeline.Snippet PIPELINE_SDF_SNIPPET = RenderPipeline.builder()
-            .withVertexShader(Identifier.withDefaultNamespace("core/text"))
-            .withBindGroupLayout(BindGroupLayout.builder()
-                    .withUniform("Fog", UniformType.UNIFORM_BUFFER)
-                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-                    .withSampler("Sampler0")
-                    .withSampler("Sampler2")
-                    .build())
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
-            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withVertexShader(Identifier.withDefaultNamespace("core/rendertype_text_intensity"))
+            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withSampler("Sampler2")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .buildSnippet();
 
     public static final RenderPipeline PIPELINE_SDF_FILL = RenderPipeline.builder(PIPELINE_SDF_SNIPPET)
             .withLocation(ModernUIMod.location("pipeline/modern_text_sdf_fill"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_text_sdf_fill"))
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true, -1.0F, -10.0F))
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withDepthBias(-1.0F, -10.0F)
             .build();
 
     public static final RenderPipeline PIPELINE_SDF_STROKE = RenderPipeline.builder(PIPELINE_SDF_SNIPPET)
             .withLocation(ModernUIMod.location("pipeline/modern_text_sdf_stroke"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_text_sdf_stroke"))
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true, -1.0F, -10.0F))
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withDepthBias(-1.0F, -10.0F)
             .build();
 
     public static final RenderPipeline PIPELINE_GUI_SDF = RenderPipeline.builder(PIPELINE_SDF_SNIPPET)
             .withLocation(ModernUIMod.location("pipeline/modern_text_gui_sdf"))
             .withFragmentShader(ModernUIMod.location("core/rendertype_modern_text_sdf_fill"))
-            .withDepthStencilState(Optional.empty())
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthWrite(false)
             .build();
 
     /*private static volatile RenderPipeline sCurrentPipelineSDFFill = PIPELINE_SDF_FILL;

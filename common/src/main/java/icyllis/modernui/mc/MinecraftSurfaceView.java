@@ -23,7 +23,7 @@ import icyllis.modernui.annotation.RenderThread;
 import icyllis.modernui.core.Context;
 import icyllis.modernui.view.View;
 import icyllis.modernui.view.ViewTreeObserver;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 
 import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
@@ -115,7 +115,7 @@ public class MinecraftSurfaceView extends View {
          * @param guiScale  current GUI scale
          * @param alpha     requested alpha for rendering objects
          */
-        void onDraw(@Nonnull GuiGraphicsExtractor gr, int mouseX, int mouseY, float deltaTick,
+        void onDraw(@Nonnull GuiGraphics gr, int mouseX, int mouseY, float deltaTick,
                     double guiScale, @FloatRange(from = 0.0, to = 1.0) float alpha);
     }
 

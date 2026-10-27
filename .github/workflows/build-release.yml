@@ -3,14 +3,12 @@ name: Build and Release
 on:
   push:
     branches:
-      - master
-      - '26.2'
+      - 1.21.11
     tags:
       - '*'
   pull_request:
     branches:
-      - master
-      - '26.2'
+      - 1.21.11
   workflow_dispatch:
     inputs:
       tag:
@@ -37,11 +35,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 25
+      - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: '21'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -56,13 +54,13 @@ jobs:
             ./gradlew --no-daemon clean build -Pfont_variant="$variant"
             suffix=universal
             if [[ "$variant" == misans ]]; then suffix=universal-misans; fi
-            for loader in fabric forge neoforge; do
+            for loader in fabric neoforge; do
               jars=("$loader"/build/libs/*-"$suffix".jar)
               [[ ${#jars[@]} -eq 1 && -f "${jars[0]}" ]]
               cp -- "${jars[0]}" release/
             done
           done
-          python3 scripts/check-release-variants.py release fabric forge neoforge
+          python3 scripts/check-release-variants.py release fabric neoforge
           ls -lh release
 
       - name: Upload build artifacts

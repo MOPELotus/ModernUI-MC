@@ -47,7 +47,7 @@ Additionally, this Mod provides many utilities which improve game performance an
 * Changing GUI scale option to Slider and providing hint text
 * Playing a "Ding" sound when Minecraft loads and reaches the Main Menu
 * Enabling smooth scrolling in Vanilla's Selection List and Forge's Scroll Panel
-* Pressing "C" to Zoom that is the same as OptiFine
+* Pressing "C" to Zoom on NeoForge, as in OptiFine
 * Undo/Redo and Unicode word iterator for all text fields
 * Playing local music, allowing to seek and view spectrum
 * Support Discord/Slack/GitHub/IamCal/JoyPixels emoji shortcodes in Chatting

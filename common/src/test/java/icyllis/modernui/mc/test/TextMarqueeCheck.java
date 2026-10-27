@@ -46,7 +46,7 @@ public final class TextMarqueeCheck {
         BakedGlyph[] glyphs = {a, b};
         float[] positions = {0.18f, 0, 4.72f, 0};
         int[] flags = {CharacterStyle.IMPLICIT_COLOR_MASK, CharacterStyle.IMPLICIT_COLOR_MASK};
-        // Exercise both pose translation (GuiGraphicsExtractor) and a fractional
+        // Exercise both pose translation (GuiGraphics) and a fractional
         // draw origin (including the old xAdj/yAdj integration API).
         for (int guiScale : new int[]{1, 2, 3, 4}) {
             for (float scale : new float[]{0.375f, 0.7f, 1, 1.25f}) {
@@ -189,7 +189,7 @@ public final class TextMarqueeCheck {
         }
         check(sites == 1, "exactly one Canvas translation injection site");
         var root = Path.of(System.getProperty("modernui.projectRoot"));
-        for (String loader : new String[]{"fabric", "forge", "neoforge"}) {
+        for (String loader : new String[]{"fabric", "neoforge"}) {
             check(Files.readString(root.resolve(loader + "/src/main/resources/mixins.modernui-" + loader + ".json"))
                     .contains("\"MixinGraniteText\""), "Canvas mixin registered for " + loader);
         }

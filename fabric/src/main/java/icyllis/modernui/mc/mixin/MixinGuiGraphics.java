@@ -22,7 +22,7 @@ import icyllis.modernui.mc.IModernGuiGraphics;
 import icyllis.modernui.mc.TooltipRenderer;
 import icyllis.modernui.mc.UIManager;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Mixin(GuiGraphicsExtractor.class)
+@Mixin(GuiGraphics.class)
 public abstract class MixinGuiGraphics implements IModernGuiGraphics {
 
     // equivalent to Forge
@@ -138,7 +138,7 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
     }
 
     @Inject(method = "setTooltipForNextFrameInternal",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;" +
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/GuiGraphics;" +
                     "deferredTooltip:Ljava/lang/Runnable;",
                     opcode = Opcodes.PUTFIELD))
     private void onRenderTooltipInternal(Font arg, List<ClientTooltipComponent> list, int m, int n,
@@ -147,7 +147,7 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
         modernUI_MC$deferredTooltipStack = modernUI_MC$tooltipStack;
     }
 
-    @Inject(method = "tooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;" +
+    @Inject(method = "renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;" +
             "IILnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;" +
             "Lnet/minecraft/resources/Identifier;)V", at = @At("HEAD"), cancellable = true)
     private void onRenderTooltip(Font font, List<ClientTooltipComponent> components,
@@ -159,7 +159,7 @@ public abstract class MixinGuiGraphics implements IModernGuiGraphics {
         if (TooltipRenderer.sTooltip) {
             if (!components.isEmpty()) {
                 UIManager.getInstance().drawExtTooltip(capturedTooltipStack,
-                        (GuiGraphicsExtractor) (Object) this,
+                        (GuiGraphics) (Object) this,
                         components, x, y, font,
                         guiWidth(), guiHeight(), positioner, tooltipStyle);
                 ci.cancel();

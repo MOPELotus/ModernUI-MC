@@ -19,29 +19,22 @@
 package icyllis.modernui.mc.mixin;
 
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import icyllis.modernui.mc.TooltipRenderer;
 import icyllis.modernui.mc.UIManager;
 import net.minecraft.client.gui.render.GuiRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import java.util.function.Supplier;
 
 @Mixin(GuiRenderer.class)
 public class MixinGuiRenderer {
 
-    @Inject(method = "executeDrawRange",
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "executeDrawRange",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;bindDefaultUniforms" +
-                    "(Lcom/mojang/blaze3d/systems/RenderPass;)V", shift = At.Shift.AFTER, remap = false),
-            locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onExecuteDrawRange(Supplier<String> $$0, RenderTarget $$1, GpuBufferSlice $$2, int $$3, int $$4,
-                                    CallbackInfo ci,
-                                    RenderPass renderPass) {
+                    "(Lcom/mojang/blaze3d/systems/RenderPass;)V", remap = false))
+    private void onBindDefaultUniforms(RenderPass renderPass) {
+        com.mojang.blaze3d.systems.RenderSystem.bindDefaultUniforms(renderPass);
         if (TooltipRenderer.sTooltip) {
             GpuBufferSlice tooltipUniforms = UIManager.getInstance().mTooltipRenderer.mUniforms;
             if (tooltipUniforms != null) {
