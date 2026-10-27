@@ -4,8 +4,9 @@
 
 | 版本 | 普通版 | MiSans 版 | 每次构建总数 |
 | --- | --- | --- | --- |
-| Minecraft 26.3 | Fabric、NeoForge | Fabric、NeoForge | 4 |
-| Minecraft 26.2 | Fabric、Forge、NeoForge | Fabric、Forge、NeoForge | 6 |
+| Minecraft 1.21.9 分支 | Fabric、NeoForge | Fabric、NeoForge | 4 |
+| Minecraft 1.21.10 分支 | Fabric、NeoForge | Fabric、NeoForge | 4 |
+| Minecraft 1.21.11 分支 | Fabric、NeoForge | Fabric、NeoForge | 4 |
 
 模组版本为 `3.13.0.9`，不再带 `-marquee.1`。普通版文件名以 `-universal.jar` 结尾；MiSans 版以 `-universal-misans.jar` 结尾，模组列表显示为 `Modern UI (MiSans)`。两版的模组 ID 都是 `modernui`，每次只安装其中一版，切换时替换原 JAR。
 
@@ -21,11 +22,20 @@
 
 GitHub Actions 的 **Build and Release** 每次按普通版、MiSans 版分别执行 `clean build`，运行回归检查并检查最终 JAR 的版本、配置文件名、安装器隔离和加载器配对，合并上传到 `modernui-mc-release-jars` artifact。普通分支推送只产出 artifact；标签或显式填写 release tag 才会发布 GitHub Release。
 
-本地单版构建（JDK 25）：
+本地构建使用 JDK 21。1.21.9 与 1.21.10 必须使用独立的 `GRADLE_USER_HOME`，避免不同 Minecraft 版本共用 Loom 分层映射缓存；建议三个分支均按版本隔离。
 
 ```sh
-./gradlew build -Pfont_variant=standard
+export JAVA_HOME=/path/to/jdk-21
+export PATH="$JAVA_HOME/bin:$PATH"
+mc_version=$(sed -n 's/^minecraft_version=//p' gradle.properties)
+export GRADLE_USER_HOME="$HOME/.gradle-modernui-$mc_version"
+./gradlew clean build -Pfont_variant=standard
+# 先复制普通版最终 JAR，再执行下一次 clean。
 ./gradlew clean build -Pfont_variant=misans
 ```
+
+最终重映射 JAR 位于 `fabric/build/libs` 和 `neoforge/build/libs`。安装 `-universal.jar` 或 `-universal-misans.jar`，不安装 `-shadow.jar` 或开发用 JAR。
+
+OpenGL 是两种加载器的目标后端。Fabric 的 Vulkan 组合使用 VulkanMod 0.6.6（1.21.9/1.21.10）或 0.6.8（1.21.11）；NeoForge 目前只有 1.21.11 的 VulkanMod Reforged 0.3.0-ALPHA 对应包。缺少对应包的 NeoForge 1.21.9/1.21.10 Vulkan 组合不列为可运行组合。以上是构建与兼容目标说明，不代表实际运行验收已经完成。
 
 省略 `font_variant` 时构建普通版。构建参数决定版本，运行时配置不会开启普通版的 MiSans 下载器。切换构建参数会重新生成常量并重新编译。

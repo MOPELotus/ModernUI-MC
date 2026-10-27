@@ -1,4 +1,4 @@
-普通版 / MiSans 版的功能、配置迁移与四包 / 六包构建说明：[字体版本说明](docs/font-editions.md)。
+普通版 / MiSans 版的功能、配置迁移与各分支四包构建说明：[字体版本说明](docs/font-editions.md)。
 
 # Modern UI for Minecraft
 [![CurseForge](http://cf.way2muchnoise.eu/full_352491_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/modern-ui)
@@ -72,7 +72,32 @@ Releases for Minecraft Mod are available on [CurseForge](https://www.curseforge.
 [Modrinth](https://modrinth.com/project/3sjzyvGR).  
 For historical reasons, issues should go to Core Repo's [Issue Tracker](https://github.com/BloCamLimb/ModernUI/issues). 
 If you have any questions, feel free to join our [Discord](https://discord.gg/kmyGKt2) server.
-### Compatibility Matrix
+### Minecraft 1.21.9–1.21.11 backports
+These branches backport the current UI and text fixes to Minecraft 1.21.9, 1.21.10 and 1.21.11. Each branch targets its own Minecraft version and builds Fabric and NeoForge artifacts, in standard and MiSans editions. Use the matching Minecraft and loader version; install one edition at a time.
+
+| Minecraft | Fabric OpenGL | NeoForge OpenGL | Fabric Vulkan package | NeoForge Vulkan package |
+| --- | --- | --- | --- | --- |
+| 1.21.9 | Targeted | Targeted | VulkanMod 0.6.6 | No matching published package |
+| 1.21.10 | Targeted | Targeted | VulkanMod 0.6.6 | No matching published package |
+| 1.21.11 | Targeted | Targeted | VulkanMod 0.6.8 | VulkanMod Reforged 0.3.0-ALPHA |
+
+Vulkan support uses the external VulkanMod backend and its Vulkan 1.2 device. VulkanMod 0.6.6's package metadata supports both 1.21.9 and 1.21.10 despite its `1.21.10` filename. The table describes the integration targets and available packages, not completed runtime acceptance. NeoForge Vulkan combinations without a matching package are outside the runnable matrix. Fabric does not provide the C-key zoom feature; that feature is specific to NeoForge.
+
+Build with JDK 21. Give the 1.21.9 and 1.21.10 branches separate `GRADLE_USER_HOME` directories: their Loom layered-mapping caches must not be shared between those Minecraft versions. A per-version cache for all three branches is recommended. From the corresponding branch checkout:
+
+```sh
+export JAVA_HOME=/path/to/jdk-21
+export PATH="$JAVA_HOME/bin:$PATH"
+# Read the version from this checkout so separate worktrees use separate caches.
+mc_version=$(sed -n 's/^minecraft_version=//p' gradle.properties)
+export GRADLE_USER_HOME="$HOME/.gradle-modernui-$mc_version"
+./gradlew clean build -Pfont_variant=standard
+./gradlew clean build -Pfont_variant=misans
+```
+
+Copy the first build's final `*-universal.jar` files before the second `clean`; the MiSans files end in `-universal-misans.jar`. Final remapped artifacts are under `fabric/build/libs` and `neoforge/build/libs`; use these instead of `-shadow.jar` or development JARs. See [font editions](docs/font-editions.md) for configuration migration and packaging details.
+
+### Historical release compatibility
 | Minecraft version | Status     | Latest Modern UI version | Mod loaders             | Rendering backend       |
 |-------------------|------------|--------------------------|-------------------------|-------------------------|
 | 26.1~26.1.2       | ✅ Mainline | 🟢 3.13.0.5              | NeoForge, Forge, Fabric | OpenGL 3.3+, Vulkan 1.1 |
