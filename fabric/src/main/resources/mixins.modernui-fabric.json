@@ -26,10 +26,13 @@
     "MixinMinecraft",
     "MixinMouseHandler",
     "MixinRenderSystem",
+    "MixinSPIRVCodeGenerator",
     "MixinScreen",
     "MixinSelectionList",
     "MixinStringSplitter",
     "MixinTextFieldHelper",
+    "MixinVulkanDeviceManager",
+    "MixinVulkanImage",
     "MixinWindow"
   ]
 }
